@@ -2,10 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Link, useLocation } from 'react-router-dom';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const location = useLocation();
+  const isHomePage = location.pathname === '/';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -15,63 +18,67 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-      setIsOpen(false);
-    }
-  };
+  const navItems = [
+    { name: 'Home', path: '/' },
+    { name: 'About', path: '/about' },
+    { name: 'Services', path: '/services' },
+    { name: 'Team', path: '/team' },
+    { name: 'Contact', path: '/contact' }
+  ];
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      isScrolled ? 'bg-background/90 backdrop-blur-md border-b' : 'bg-transparent'
+      isScrolled || !isHomePage 
+        ? 'bg-background/95 backdrop-blur-md border-b border-border shadow-lg' 
+        : 'bg-background/80 backdrop-blur-sm'
     }`}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center">
-            <div className="flex-shrink-0 flex items-center space-x-3">
-              <img 
-                src="/lovable-uploads/6a024266-f398-46f6-b314-d701a497b879.png" 
-                alt="ReView AI Logo" 
-                className="w-8 h-8 object-contain"
-              />
-              <h1 className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-                RE-VIEW
-              </h1>
+        <div className="flex items-center justify-between h-20">
+          <Link to="/" className="flex items-center space-x-3 group">
+            <div className="relative">
+              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-primary/20 group-hover:border-primary/40 transition-all duration-300 group-hover:scale-110">
+                <img 
+                  src="/lovable-uploads/6a024266-f398-46f6-b314-d701a497b879.png" 
+                  alt="ReView AI Logo" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
             </div>
-          </div>
+            <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              RE-VIEW
+            </h1>
+          </Link>
           
           <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-4">
-              <button onClick={() => scrollToSection('home')} className="text-foreground hover:text-primary transition-colors px-3 py-2 rounded-md text-sm font-medium">
-                Home
-              </button>
-              <button onClick={() => scrollToSection('about')} className="text-foreground hover:text-primary transition-colors px-3 py-2 rounded-md text-sm font-medium">
-                About
-              </button>
-              <button onClick={() => scrollToSection('services')} className="text-foreground hover:text-primary transition-colors px-3 py-2 rounded-md text-sm font-medium">
-                Services
-              </button>
-              <button onClick={() => scrollToSection('team')} className="text-foreground hover:text-primary transition-colors px-3 py-2 rounded-md text-sm font-medium">
-                Team
-              </button>
-              <button onClick={() => scrollToSection('contact')} className="text-foreground hover:text-primary transition-colors px-3 py-2 rounded-md text-sm font-medium">
-                Contact
-              </button>
+            <div className="ml-10 flex items-baseline space-x-1">
+              {navItems.map((item) => (
+                <Link
+                  key={item.name}
+                  to={item.path}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                    location.pathname === item.path
+                      ? 'bg-primary/10 text-primary border border-primary/20'
+                      : 'text-foreground/80 hover:text-primary hover:bg-primary/5'
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              ))}
             </div>
           </div>
 
           <div className="hidden md:block">
-            <Button onClick={() => scrollToSection('contact')} className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700">
-              Get Started
-            </Button>
+            <Link to="/contact">
+              <Button className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-300">
+                Get Started
+              </Button>
+            </Link>
           </div>
 
           <div className="md:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-foreground hover:text-primary focus:outline-none"
+              className="inline-flex items-center justify-center p-2 rounded-md text-foreground hover:text-primary focus:outline-none transition-colors"
             >
               {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
@@ -81,26 +88,27 @@ const Navbar = () => {
 
       {isOpen && (
         <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-background border-b">
-            <button onClick={() => scrollToSection('home')} className="block px-3 py-2 rounded-md text-base font-medium text-foreground hover:text-primary transition-colors w-full text-left">
-              Home
-            </button>
-            <button onClick={() => scrollToSection('about')} className="block px-3 py-2 rounded-md text-base font-medium text-foreground hover:text-primary transition-colors w-full text-left">
-              About
-            </button>
-            <button onClick={() => scrollToSection('services')} className="block px-3 py-2 rounded-md text-base font-medium text-foreground hover:text-primary transition-colors w-full text-left">
-              Services
-            </button>
-            <button onClick={() => scrollToSection('team')} className="block px-3 py-2 rounded-md text-base font-medium text-foreground hover:text-primary transition-colors w-full text-left">
-              Team
-            </button>
-            <button onClick={() => scrollToSection('contact')} className="block px-3 py-2 rounded-md text-base font-medium text-foreground hover:text-primary transition-colors w-full text-left">
-              Contact
-            </button>
+          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-background/95 backdrop-blur-md border-b border-border shadow-lg">
+            {navItems.map((item) => (
+              <Link
+                key={item.name}
+                to={item.path}
+                onClick={() => setIsOpen(false)}
+                className={`block px-3 py-2 rounded-md text-base font-medium transition-all duration-200 ${
+                  location.pathname === item.path
+                    ? 'bg-primary/10 text-primary border border-primary/20'
+                    : 'text-foreground/80 hover:text-primary hover:bg-primary/5'
+                }`}
+              >
+                {item.name}
+              </Link>
+            ))}
             <div className="px-3 py-2">
-              <Button onClick={() => scrollToSection('contact')} className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700">
-                Get Started
-              </Button>
+              <Link to="/contact" onClick={() => setIsOpen(false)}>
+                <Button className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground font-semibold">
+                  Get Started
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
