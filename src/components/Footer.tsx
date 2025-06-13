@@ -14,7 +14,7 @@ const Footer = () => {
         <div className="grid md:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="col-span-2 md:col-span-1">
-            <div className="flex items-center space-x-3 mb-4 ml-4">
+            <div className="flex items-center space-x-3 mb-4 ml-8">
               <img 
                 src="/lovable-uploads/b7fe417c-7ef1-4666-a384-d9bd5e26da84.png" 
                 alt="ReView AI Logo" 
