@@ -46,7 +46,7 @@ const WelcomePopup = ({ onContactClick }: WelcomePopupProps) => {
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="flex justify-center"
+            className="flex justify-center ml-4"
           >
             <div className="relative">
               <div className="w-20 h-20 rounded-full overflow-hidden border-3 border-primary/20 shadow-xl">
