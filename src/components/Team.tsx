@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import TeamCard from './TeamCard';
 
 const Team = () => {
   const teamMembers = [
@@ -10,42 +10,54 @@ const Team = () => {
       role: "CEO & AI Architect",
       expertise: "Machine Learning, Business Strategy",
       initials: "AC",
-      color: "bg-gradient-to-br from-blue-600 to-cyan-600"
+      color: "bg-gradient-to-br from-blue-600 to-cyan-600",
+      bio: "Visionary leader with 8+ years in AI/ML and business strategy. Alex founded ReView AI with the mission to democratize artificial intelligence for businesses of all sizes.",
+      achievements: ["Founded 3 successful startups", "AI/ML PhD from Stanford", "50+ published research papers", "Fortune 500 AI consultant"]
     },
     {
       name: "Maya Patel",
       role: "CTO & Full-Stack Developer",
       expertise: "Software Engineering, Cloud Architecture",
       initials: "MP",
-      color: "bg-gradient-to-br from-purple-600 to-pink-600"
+      color: "bg-gradient-to-br from-purple-600 to-pink-600",
+      bio: "Full-stack expert specializing in scalable cloud architectures. Maya leads our technical vision and ensures our solutions are built for the future.",
+      achievements: ["10+ years in enterprise software", "AWS Solutions Architect", "Built systems for 1M+ users", "Open source contributor"]
     },
     {
       name: "Jordan Kim",
       role: "Head of Design",
       expertise: "UI/UX Design, Product Strategy",
       initials: "JK",
-      color: "bg-gradient-to-br from-indigo-600 to-blue-600"
+      color: "bg-gradient-to-br from-indigo-600 to-blue-600",
+      bio: "Creative strategist with a passion for user-centered design. Jordan ensures every product we create delivers exceptional user experiences.",
+      achievements: ["Design Systems expert", "Award-winning UI designer", "100+ apps designed", "UX research specialist"]
     },
     {
       name: "Sam Rodriguez",
       role: "Lead Developer",
       expertise: "Frontend Development, Mobile Apps",
       initials: "SR",
-      color: "bg-gradient-to-br from-teal-600 to-green-600"
+      color: "bg-gradient-to-br from-teal-600 to-green-600",
+      bio: "Frontend specialist with expertise in modern frameworks and mobile development. Sam brings ideas to life with clean, efficient code.",
+      achievements: ["React/React Native expert", "Performance optimization guru", "Mobile app store features", "Tech conference speaker"]
     },
     {
       name: "Riley Thompson",
       role: "AI Specialist",
       expertise: "Deep Learning, Data Science",
       initials: "RT",
-      color: "bg-gradient-to-br from-orange-600 to-red-600"
+      color: "bg-gradient-to-br from-orange-600 to-red-600",
+      bio: "Data science expert with deep learning expertise. Riley develops the AI models that power our intelligent solutions.",
+      achievements: ["Machine Learning PhD", "Kaggle competitions winner", "Computer vision expert", "NLP research specialist"]
     },
     {
       name: "Casey Wu",
       role: "Project Manager",
       expertise: "Agile Methodologies, Client Relations",
       initials: "CW",
-      color: "bg-gradient-to-br from-violet-600 to-purple-600"
+      color: "bg-gradient-to-br from-violet-600 to-purple-600",
+      bio: "Project management expert who ensures seamless delivery and client satisfaction. Casey coordinates our teams to deliver exceptional results.",
+      achievements: ["PMP certified", "Agile coach", "200+ projects delivered", "Client satisfaction expert"]
     }
   ];
 
@@ -62,27 +74,20 @@ const Team = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 perspective-1000">
           {teamMembers.map((member, index) => (
-            <Card 
-              key={index} 
-              className="group hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-0 bg-white shadow-lg"
-            >
-              <CardContent className="p-8 text-center">
-                <div className="mb-6">
-                  <Avatar className="w-24 h-24 mx-auto mb-4 ring-4 ring-white shadow-xl group-hover:scale-110 transition-transform duration-300">
-                    <AvatarFallback className={`${member.color} text-white text-xl font-bold`}>
-                      {member.initials}
-                    </AvatarFallback>
-                  </Avatar>
-                  <h3 className="text-xl font-bold text-gray-800 group-hover:text-blue-600 transition-colors duration-300">
-                    {member.name}
-                  </h3>
-                  <p className="text-blue-600 font-semibold mb-2">{member.role}</p>
-                  <p className="text-gray-600 text-sm">{member.expertise}</p>
-                </div>
-              </CardContent>
-            </Card>
+            <TeamCard 
+              key={index}
+              name={member.name}
+              role={member.role}
+              expertise={member.expertise}
+              initials={member.initials}
+              color={member.color}
+              bio={member.bio}
+              achievements={member.achievements}
+              index={index}
+              totalCards={teamMembers.length}
+            />
           ))}
         </div>
 

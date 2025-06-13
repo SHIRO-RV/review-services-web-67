@@ -98,8 +98,17 @@
 
 /* Enhanced animations for the deck shuffling effect */
 @layer utilities {
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+  
+  .transform-gpu {
+    transform: translate3d(0, 0, 0);
+  }
+  
   .card-stack {
     perspective: 1000px;
+    transform-style: preserve-3d;
   }
   
   .card-shuffle {
@@ -117,6 +126,10 @@
   
   .animate-card-flip {
     animation: cardFlip 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
+  }
+
+  .animate-deck-shuffle {
+    animation: deckShuffle 1.2s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
   }
 }
 
@@ -147,6 +160,25 @@
   }
 }
 
+@keyframes deckShuffle {
+  0% {
+    transform: translateY(100px) rotateX(45deg) scale(0.8);
+    opacity: 0;
+  }
+  30% {
+    transform: translateY(30px) rotateX(15deg) scale(0.9);
+    opacity: 0.5;
+  }
+  60% {
+    transform: translateY(-10px) rotateX(-5deg) scale(1.05);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(0) rotateX(0deg) scale(1);
+    opacity: 1;
+  }
+}
+
 /* Enhanced fade-in animation */
 @keyframes fadeInUp {
   0% {
@@ -161,4 +193,18 @@
 
 .animate-fade-in-up {
   animation: fadeInUp 0.8s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+}
+
+/* Smooth scrolling for better UX */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Performance optimizations */
+* {
+  will-change: auto;
+}
+
+.card-container {
+  will-change: transform, opacity;
 }

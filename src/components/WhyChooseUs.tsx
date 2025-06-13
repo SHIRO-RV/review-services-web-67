@@ -1,37 +1,43 @@
-
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+import FeatureCard from './FeatureCard';
 
 const WhyChooseUs = () => {
   const reasons = [
     {
       title: "Young, Dynamic Perspectives",
       description: "Fresh thinking unconstrained by traditional approaches, bringing innovative solutions to complex challenges.",
+      detailedContent: "Our young team brings fresh perspectives unbound by traditional constraints. We approach every challenge with curiosity and creativity, leveraging the latest technologies and methodologies. Our diverse backgrounds and modern education ensure we stay ahead of industry trends and deliver cutting-edge solutions that traditional agencies might overlook.",
       gradient: "from-blue-500 to-cyan-500"
     },
     {
       title: "Hybrid Tech Solutions",
       description: "Seamlessly blending AI, software development, and design to create comprehensive digital ecosystems.",
+      detailedContent: "We don't just build software or design interfaces - we create complete digital ecosystems. Our integrated approach combines artificial intelligence, robust software development, and stunning design to deliver solutions that work seamlessly together. This holistic methodology ensures consistency, efficiency, and maximum impact across all aspects of your digital presence.",
       gradient: "from-purple-500 to-pink-500"
     },
     {
       title: "Scalable & Future-Ready",
       description: "Building with tomorrow in mind, ensuring your solutions grow and adapt with your business needs.",
+      detailedContent: "Every solution we build is designed for growth. We use modular architectures, cloud-native technologies, and scalable frameworks that can adapt as your business evolves. Our forward-thinking approach means your investment today will continue to deliver value as your needs change and expand over time.",
       gradient: "from-indigo-500 to-blue-500"
     },
     {
       title: "Rapid Innovation Cycles",
       description: "Agile development and quick iteration cycles that get your ideas to market faster than ever.",
+      detailedContent: "Speed is crucial in today's market. Our agile methodologies and rapid prototyping capabilities allow us to move from concept to deployment in record time. We use iterative development cycles, continuous integration, and automated testing to ensure quality while maintaining velocity. Your time-to-market is significantly reduced without compromising on quality.",
       gradient: "from-teal-500 to-green-500"
     },
     {
       title: "Client-Centric Approach",
       description: "Your success is our success. We work as an extension of your team, not just a vendor.",
+      detailedContent: "We believe in true partnerships. Our team integrates seamlessly with yours, understanding your business goals, challenges, and culture. We provide transparent communication, regular updates, and collaborative decision-making throughout the project lifecycle. Your success metrics become our success metrics.",
       gradient: "from-orange-500 to-red-500"
     },
     {
       title: "Cutting-Edge Technology",
       description: "Always at the forefront of technological advancement, ensuring you stay ahead of the competition.",
+      detailedContent: "We stay at the cutting edge of technology through continuous learning, experimentation, and industry engagement. Our team regularly attends conferences, contributes to open source, and experiments with emerging technologies. This ensures your solutions leverage the latest innovations and maintain competitive advantages in your market.",
       gradient: "from-violet-500 to-purple-500"
     }
   ];
@@ -49,26 +55,17 @@ const WhyChooseUs = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 perspective-1000">
           {reasons.map((reason, index) => (
-            <Card 
-              key={index} 
-              className="group hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-0 bg-white/80 backdrop-blur-sm"
-            >
-              <CardHeader className="pb-4">
-                <div className={`w-12 h-12 mb-4 bg-gradient-to-br ${reason.gradient} rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-                  <div className="w-6 h-6 bg-white rounded-sm"></div>
-                </div>
-                <CardTitle className="text-xl font-bold text-gray-800 group-hover:text-blue-600 transition-colors duration-300">
-                  {reason.title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 leading-relaxed">
-                  {reason.description}
-                </p>
-              </CardContent>
-            </Card>
+            <FeatureCard 
+              key={index}
+              title={reason.title}
+              description={reason.description}
+              detailedContent={reason.detailedContent}
+              gradient={reason.gradient}
+              index={index}
+              totalCards={reasons.length}
+            />
           ))}
         </div>
 
