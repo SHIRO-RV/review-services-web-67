@@ -15,9 +15,16 @@ const Footer = () => {
         <div className="grid md:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="col-span-2 md:col-span-1">
-            <h3 className="text-2xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-              ReView AI
-            </h3>
+            <div className="flex items-center space-x-3 mb-4">
+              <img 
+                src="/lovable-uploads/6a024266-f398-46f6-b314-d701a497b879.png" 
+                alt="ReView AI Logo" 
+                className="w-10 h-10 object-contain"
+              />
+              <h3 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+                RE-VIEW
+              </h3>
+            </div>
             <p className="text-gray-400 mb-6 leading-relaxed">
               Pioneering AI-powered solutions and cutting-edge technology services. Founded by visionary minds, building tomorrow's digital landscape today.
             </p>

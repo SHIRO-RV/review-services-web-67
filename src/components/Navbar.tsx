@@ -30,9 +30,14 @@ const Navbar = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                ReView AI
+            <div className="flex-shrink-0 flex items-center space-x-3">
+              <img 
+                src="/lovable-uploads/6a024266-f398-46f6-b314-d701a497b879.png" 
+                alt="ReView AI Logo" 
+                className="w-8 h-8 object-contain"
+              />
+              <h1 className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+                RE-VIEW
               </h1>
             </div>
           </div>
@@ -58,7 +63,7 @@ const Navbar = () => {
           </div>
 
           <div className="hidden md:block">
-            <Button onClick={() => scrollToSection('contact')} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+            <Button onClick={() => scrollToSection('contact')} className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700">
               Get Started
             </Button>
           </div>
@@ -93,7 +98,7 @@ const Navbar = () => {
               Contact
             </button>
             <div className="px-3 py-2">
-              <Button onClick={() => scrollToSection('contact')} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+              <Button onClick={() => scrollToSection('contact')} className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700">
                 Get Started
               </Button>
             </div>
