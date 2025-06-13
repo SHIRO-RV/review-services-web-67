@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "react-router-dom";
+import ScrollToTop from "./components/ScrollToTop";
 import Index from "./pages/Index";
 import AboutPage from "./pages/AboutPage";
 import ServicesPage from "./pages/ServicesPage";
@@ -38,38 +39,41 @@ const PageTransition = ({ children }: { children: React.ReactNode }) => {
 
 const AppRoutes = () => {
   return (
-    <Routes>
-      <Route path="/" element={
-        <PageTransition>
-          <Index />
-        </PageTransition>
-      } />
-      <Route path="/about" element={
-        <PageTransition>
-          <AboutPage />
-        </PageTransition>
-      } />
-      <Route path="/services" element={
-        <PageTransition>
-          <ServicesPage />
-        </PageTransition>
-      } />
-      <Route path="/team" element={
-        <PageTransition>
-          <TeamPage />
-        </PageTransition>
-      } />
-      <Route path="/contact" element={
-        <PageTransition>
-          <ContactPage />
-        </PageTransition>
-      } />
-      <Route path="*" element={
-        <PageTransition>
-          <NotFound />
-        </PageTransition>
-      } />
-    </Routes>
+    <>
+      <ScrollToTop />
+      <Routes>
+        <Route path="/" element={
+          <PageTransition>
+            <Index />
+          </PageTransition>
+        } />
+        <Route path="/about" element={
+          <PageTransition>
+            <AboutPage />
+          </PageTransition>
+        } />
+        <Route path="/services" element={
+          <PageTransition>
+            <ServicesPage />
+          </PageTransition>
+        } />
+        <Route path="/team" element={
+          <PageTransition>
+            <TeamPage />
+          </PageTransition>
+        } />
+        <Route path="/contact" element={
+          <PageTransition>
+            <ContactPage />
+          </PageTransition>
+        } />
+        <Route path="*" element={
+          <PageTransition>
+            <NotFound />
+          </PageTransition>
+        } />
+      </Routes>
+    </>
   );
 };
 

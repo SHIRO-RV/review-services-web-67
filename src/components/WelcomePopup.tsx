@@ -33,15 +33,15 @@ const WelcomePopup = ({ onContactClick }: WelcomePopupProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-lg border-0 bg-gradient-to-br from-background to-background/80 backdrop-blur-xl shadow-2xl overflow-hidden">
+      <DialogContent className="sm:max-w-lg border border-slate-200 bg-white shadow-2xl overflow-hidden rounded-2xl">
         <button 
           onClick={() => setIsOpen(false)}
-          className="absolute right-4 top-4 z-10 text-muted-foreground hover:text-foreground transition-colors rounded-full p-1 hover:bg-accent"
+          className="absolute right-6 top-6 z-10 text-slate-400 hover:text-slate-600 transition-colors rounded-full p-1 hover:bg-slate-100"
         >
-          <X className="h-4 w-4" />
+          <X className="h-5 w-5" />
         </button>
         
-        <DialogHeader className="text-center space-y-4 pt-2">
+        <DialogHeader className="text-center space-y-6 pt-8 pb-4">
           <motion.div 
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -49,7 +49,7 @@ const WelcomePopup = ({ onContactClick }: WelcomePopupProps) => {
             className="flex justify-center"
           >
             <div className="relative">
-              <div className="w-20 h-20 rounded-full overflow-hidden border-3 border-primary/20 shadow-lg">
+              <div className="w-20 h-20 rounded-full overflow-hidden border-3 border-primary/20 shadow-xl">
                 <img 
                   src="/lovable-uploads/6a024266-f398-46f6-b314-d701a497b879.png" 
                   alt="ReView AI Logo" 
@@ -67,18 +67,18 @@ const WelcomePopup = ({ onContactClick }: WelcomePopupProps) => {
             </div>
           </motion.div>
           
-          <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          <DialogTitle className="text-3xl font-bold text-slate-900">
             Welcome to ReView AI
           </DialogTitle>
           
-          <DialogDescription className="text-muted-foreground text-base leading-relaxed max-w-sm mx-auto">
+          <DialogDescription className="text-slate-600 text-lg leading-relaxed max-w-md mx-auto">
             Transform your vision into reality with our cutting-edge AI-powered solutions. 
             Ready to build something amazing?
           </DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-6 px-2">
-          <div className="space-y-3">
+        <div className="space-y-8 px-8 pb-8">
+          <div className="space-y-4">
             <AnimatePresence>
               {features.map((feature, index) => (
                 <motion.div
@@ -86,19 +86,19 @@ const WelcomePopup = ({ onContactClick }: WelcomePopupProps) => {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.1 * index, duration: 0.3 }}
-                  className="flex items-center space-x-3 p-3 rounded-lg bg-accent/10 border border-accent/20"
+                  className="flex items-center space-x-4 p-4 rounded-xl bg-slate-50 border border-slate-100"
                 >
-                  <CheckCircle className="h-5 w-5 text-primary" />
-                  <span className="text-sm font-medium text-foreground">{feature}</span>
+                  <CheckCircle className="h-6 w-6 text-primary flex-shrink-0" />
+                  <span className="text-base font-medium text-slate-700">{feature}</span>
                 </motion.div>
               ))}
             </AnimatePresence>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             <Button 
               onClick={handleBuildWebsite}
-              className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground font-semibold py-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
+              className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold py-4 text-lg rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
             >
               <ArrowRight className="h-5 w-5 mr-2" />
               Start Your Project Today
@@ -106,7 +106,7 @@ const WelcomePopup = ({ onContactClick }: WelcomePopupProps) => {
             
             <button 
               onClick={() => setIsOpen(false)}
-              className="w-full text-muted-foreground hover:text-foreground text-sm py-3 transition-colors font-medium"
+              className="w-full text-slate-500 hover:text-slate-700 text-base py-3 transition-colors font-medium"
             >
               Maybe later
             </button>
