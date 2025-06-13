@@ -9,8 +9,16 @@ import WhyChooseUs from '../components/WhyChooseUs';
 import Contact from '../components/Contact';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
+import WelcomePopup from '../components/WelcomePopup';
 
 const Index = () => {
+  const scrollToContact = () => {
+    const element = document.getElementById('contact');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -22,6 +30,7 @@ const Index = () => {
       <WhyChooseUs />
       <Contact />
       <Footer />
+      <WelcomePopup onContactClick={scrollToContact} />
     </div>
   );
 };
