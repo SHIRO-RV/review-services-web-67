@@ -34,7 +34,7 @@ const Hero = () => {
               <div className="absolute -inset-4 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full blur-lg opacity-30 group-hover:opacity-50 transition-all duration-500 animate-pulse"></div>
               <div className="relative w-48 h-48 md:w-64 md:h-64 rounded-full overflow-hidden border-4 border-white/20 backdrop-blur-sm shadow-2xl transform hover:scale-110 transition-all duration-500 animate-fade-in">
                 <img 
-                  src="/lovable-uploads/6a024266-f398-46f6-b314-d701a497b879.png" 
+                  src="/lovable-uploads/b7fe417c-7ef1-4666-a384-d9bd5e26da84.png" 
                   alt="ReView AI Logo" 
                   className="w-full h-full object-cover"
                 />

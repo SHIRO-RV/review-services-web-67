@@ -51,7 +51,7 @@ const WelcomePopup = ({ onContactClick }: WelcomePopupProps) => {
             <div className="relative">
               <div className="w-20 h-20 rounded-full overflow-hidden border-3 border-primary/20 shadow-xl">
                 <img 
-                  src="/lovable-uploads/6a024266-f398-46f6-b314-d701a497b879.png" 
+                  src="/lovable-uploads/b7fe417c-7ef1-4666-a384-d9bd5e26da84.png" 
                   alt="ReView AI Logo" 
                   className="w-full h-full object-cover"
                 />
