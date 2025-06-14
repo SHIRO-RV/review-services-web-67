@@ -2,12 +2,12 @@ import React, { useState, useRef } from "react";
 import { MessageSquare } from "lucide-react";
 import WhatsAppButton from "./WhatsAppButton";
 import { FAQS, findAnswer } from "./revyChatBotUtils";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"; // Added Avatar imports
 
 const WHATSAPP_NUMBER = "918341105135";
 
 const RevyChatBot = () => {
   const [open, setOpen] = useState(false);
-  // Fix: Allow message "text" to be string or React.ReactNode (e.g. JSX)
   const [messages, setMessages] = useState<{ from: string; text: string | React.ReactNode; }[]>([
     {
       from: "bot",
@@ -16,7 +16,9 @@ const RevyChatBot = () => {
   ]);
   const [input, setInput] = useState("");
   const [lastUserQuestion, setLastUserQuestion] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null); // Changed from messagesEndRef to inputRef as messagesEndRef is already defined below
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
 
   // Scroll to bottom when a new message comes in
   React.useEffect(() => {
@@ -82,7 +84,11 @@ const RevyChatBot = () => {
         <div className="fixed z-50 bottom-24 right-6 w-80 max-w-[92vw] bg-white border border-blue-200 rounded-xl shadow-2xl flex flex-col animate-fade-in-up">
           <div className="flex items-center justify-between px-4 py-3 border-b border-blue-100 bg-gradient-to-r from-blue-600 to-purple-600 rounded-t-xl">
             <span className="font-bold text-white text-lg flex items-center gap-2">
-              <MessageSquare className="inline mr-1" size={22} /> Revy
+              <Avatar className="h-7 w-7 border-2 border-white/50">
+                <AvatarImage src="/lovable-uploads/e386a7d6-7e49-4326-9a62-5226b96d6577.png" alt="Revy Chatbot" />
+                <AvatarFallback>R</AvatarFallback>
+              </Avatar>
+              Revy
             </span>
             <button
               onClick={() => setOpen(false)}
@@ -118,6 +124,7 @@ const RevyChatBot = () => {
             autoComplete="off"
           >
             <input
+              ref={inputRef} // Changed from messagesEndRef to inputRef for consistency
               type="text"
               className="flex-1 px-4 py-2 rounded-lg border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
               placeholder="Type your question..."

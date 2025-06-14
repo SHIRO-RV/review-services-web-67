@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { X, Sparkles, ArrowRight, CheckCircle } from 'lucide-react';
+import { Sparkles, ArrowRight, CheckCircle } from 'lucide-react'; // Removed X as it's no longer used for a custom button
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface WelcomePopupProps {
@@ -32,20 +32,18 @@ const WelcomePopup = ({ onContactClick }: WelcomePopupProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-lg border border-slate-200 bg-white shadow-2xl overflow-hidden rounded-2xl">
-        <button 
-          onClick={() => setIsOpen(false)}
-          className="absolute right-6 top-6 z-10 text-slate-400 hover:text-slate-600 transition-colors rounded-full p-1 hover:bg-slate-100"
-        >
-          <X className="h-5 w-5" />
-        </button>
+      <DialogContent className="sm:max-w-lg border border-slate-200 bg-white shadow-2xl overflow-hidden rounded-2xl p-0"> {/* Adjusted padding to p-0 to let DialogHeader/Footer handle it if DialogPrimitive.Close is styled for right-4 top-4 */}
+        {/* The custom close button that was here has been removed. 
+            The DialogContent component provides its own close button by default, 
+            which is typically positioned at the top right (e.g., absolute right-4 top-4).
+        */}
         
-        <DialogHeader className="text-center space-y-6 pt-8 pb-4">
+        <DialogHeader className="text-center space-y-6 pt-8 pb-4 px-6"> {/* Added px-6 for header padding */}
           <motion.div 
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="flex justify-center ml-16"
+            className="flex justify-center" // Removed ml-16 as it might conflict with centering
           >
             <div className="relative">
               <div className="w-20 h-20 rounded-full overflow-hidden border-3 border-primary/20 shadow-xl">
@@ -76,7 +74,7 @@ const WelcomePopup = ({ onContactClick }: WelcomePopupProps) => {
           </DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-8 px-8 pb-8">
+        <div className="space-y-8 px-8 pb-8"> {/* Ensured padding for content area */}
           <div className="space-y-4">
             <AnimatePresence>
               {features.map((feature, index) => (
