@@ -46,14 +46,14 @@ const WelcomePopup = ({ onContactClick }: WelcomePopupProps) => {
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="flex justify-center ml-8"
+            className="flex justify-center ml-12"
           >
             <div className="relative">
               <div className="w-20 h-20 rounded-full overflow-hidden border-3 border-primary/20 shadow-xl">
                 <img 
                   src="/lovable-uploads/b7fe417c-7ef1-4666-a384-d9bd5e26da84.png" 
                   alt="ReView AI Logo" 
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover object-center"
                 />
               </div>
               <motion.div
