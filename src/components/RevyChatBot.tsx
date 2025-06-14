@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from "react";
 import { MessageSquare } from "lucide-react";
 
@@ -97,7 +96,8 @@ const WHATSAPP_NUMBER = "918341105135";
 
 const RevyChatBot = () => {
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState([
+  // Fix: Allow message "text" to be string or React.ReactNode (e.g. JSX)
+  const [messages, setMessages] = useState<{ from: string; text: string | React.ReactNode; }[]>([
     {
       from: "bot",
       text: "Hi! I'm Revy 🤖. Ask me anything about our company, our services, or your web project!"
@@ -200,9 +200,8 @@ const RevyChatBot = () => {
                   `}
                   style={{ maxWidth: "85%" }}
                 >
-                  {typeof msg.text === "string"
-                    ? msg.text
-                    : msg.text /* can be ReactNode if WhatsApp button shown */}
+                  {/* Fix: Render string or ReactNode */}
+                  {msg.text}
                 </div>
               </div>
             ))}
