@@ -1,6 +1,9 @@
+
 /**
  * Utility functions and constants for RevyChatBot.
  */
+
+import { pipeline } from '@huggingface/transformers';
 
 export const FAQS = [
   {
@@ -93,6 +96,69 @@ export function findAnswer(question: string): string | null {
   return null;
 }
 
+// Initialize the text generation pipeline (cached after first load)
+let textGenerator: any = null;
+
+export async function getHuggingFaceResponse(question: string, conversationHistory: {role: string, content: string}[]): Promise<string> {
+  try {
+    console.log('Initializing Hugging Face AI model...');
+    
+    // Initialize the model if not already done
+    if (!textGenerator) {
+      textGenerator = await pipeline(
+        'text-generation',
+        'microsoft/DialoGPT-small',
+        { 
+          device: 'cpu',
+          dtype: 'fp32'
+        }
+      );
+    }
+
+    // Create context from conversation history
+    const context = conversationHistory
+      .slice(-6) // Keep last 6 messages for context
+      .map(msg => `${msg.role === 'user' ? 'Human' : 'Assistant'}: ${msg.content}`)
+      .join('\n');
+
+    // Create a prompt with ReView AI context
+    const prompt = `You are Revy, a helpful AI assistant for ReView AI, a web solutions agency that creates custom software, apps, AI-powered tools, UI/UX design, and consulting services. Be friendly, concise, and helpful.
+
+Context: ${context}
+Human: ${question}
+Assistant:`;
+
+    const response = await textGenerator(prompt, {
+      max_new_tokens: 100,
+      temperature: 0.7,
+      do_sample: true,
+      pad_token_id: 50256
+    });
+
+    // Extract the generated text
+    let generatedText = response[0].generated_text;
+    
+    // Clean up the response to get just the assistant's reply
+    const assistantIndex = generatedText.lastIndexOf('Assistant:');
+    if (assistantIndex !== -1) {
+      generatedText = generatedText.substring(assistantIndex + 10).trim();
+    }
+
+    // Remove any remaining conversation artifacts
+    generatedText = generatedText.split('\n')[0].trim();
+    
+    // Ensure it's not empty and makes sense
+    if (!generatedText || generatedText.length < 10) {
+      return "I'm here to help with any questions about ReView AI's services! Feel free to ask about our web development, app creation, or AI solutions.";
+    }
+
+    return generatedText;
+  } catch (error) {
+    console.error("Failed to get response from Hugging Face AI:", error);
+    return "I'm currently loading my AI capabilities. In the meantime, I can help with frequently asked questions about ReView AI!";
+  }
+}
+
 export async function getPerplexityResponse(question: string, apiKey: string, conversationHistory: {role: string, content: string}[]): Promise<string> {
   try {
     const messagesForApi = [
@@ -100,19 +166,17 @@ export async function getPerplexityResponse(question: string, apiKey: string, co
         role: 'system',
         content: "You are Revy, a helpful AI assistant for ReView AI, a web solutions agency. Be friendly, concise, and helpful. If you don't know an answer, say so politely. Do not make up information about ReView AI's specific projects or internal details unless it's in the FAQS or general knowledge you are programmed with."
       },
-      ...conversationHistory, // Add previous messages
+      ...conversationHistory,
       {
         role: 'user',
         content: question
       }
     ];
 
-    // Keep only the last N messages to avoid exceeding token limits (e.g., last 10 messages including system prompt)
     const maxHistoryLength = 10;
     if (messagesForApi.length > maxHistoryLength) {
-        messagesForApi.splice(1, messagesForApi.length - maxHistoryLength); // remove older messages, keep system prompt
+        messagesForApi.splice(1, messagesForApi.length - maxHistoryLength);
     }
-
 
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
@@ -121,9 +185,9 @@ export async function getPerplexityResponse(question: string, apiKey: string, co
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama-3.1-sonar-small-128k-online', // Using a capable online model
+        model: 'llama-3.1-sonar-small-128k-online',
         messages: messagesForApi,
-        temperature: 0.7, // Adjust for creativity vs. factuality
+        temperature: 0.7,
       }),
     });
 

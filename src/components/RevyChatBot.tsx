@@ -1,11 +1,12 @@
+
 import React, { useState, useRef, useEffect } from "react";
-import { SendHorizontal, Settings, MessageSquare } from "lucide-react"; // Added Settings
+import { SendHorizontal, Settings, MessageSquare, Sparkles } from "lucide-react";
 import WhatsAppButton from "./WhatsAppButton";
-import { findAnswer, getPerplexityResponse } from "./revyChatBotUtils";
+import { findAnswer, getHuggingFaceResponse, getPerplexityResponse } from "./revyChatBotUtils";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button"; // Added Button
-import { Input } from "@/components/ui/input"; // Added Input
-import { toast } from "sonner"; // Added toast
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
 const WHATSAPP_NUMBER = "918341105135";
@@ -14,7 +15,7 @@ const REVY_LOGO_URL = "/lovable-uploads/e386a7d6-7e49-4326-9a62-5226b96d6577.png
 interface Message {
   from: "user" | "bot";
   text: string | React.ReactNode;
-  type?: "typing" | "error";
+  type?: "typing" | "error" | "ai-powered";
 }
 
 const RevyChatBot = () => {
@@ -22,25 +23,26 @@ const RevyChatBot = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       from: "bot",
-      text: "Hi! I'm Revy 🤖. Ask me anything about our company, our services, or your web project! For advanced AI answers, please provide a Perplexity API key via the settings icon in the header."
+      text: "Hi! I'm Revy 🤖. I'm powered by open-source AI and can help you with questions about ReView AI's services. Ask me anything!",
+      type: "ai-powered"
     }
   ]);
   const [input, setInput] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [showAskRevyTooltip, setShowAskRevyTooltip] = useState(false);
-
   const [perplexityApiKey, setPerplexityApiKey] = useState<string | null>(null);
   const [tempApiKey, setTempApiKey] = useState<string>("");
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
   const [isAiThinking, setIsAiThinking] = useState(false);
-
+  const [aiMode, setAiMode] = useState<'huggingface' | 'perplexity'>('huggingface');
 
   useEffect(() => {
     const storedApiKey = localStorage.getItem("perplexityApiKey");
     if (storedApiKey) {
       setPerplexityApiKey(storedApiKey);
-      setTempApiKey(storedApiKey); // Pre-fill input if key exists
+      setTempApiKey(storedApiKey);
+      setAiMode('perplexity');
     }
   }, []);
 
@@ -82,23 +84,25 @@ const RevyChatBot = () => {
     if (tempApiKey.trim()) {
       localStorage.setItem("perplexityApiKey", tempApiKey.trim());
       setPerplexityApiKey(tempApiKey.trim());
+      setAiMode('perplexity');
       setShowApiKeyInput(false);
-      toast.success("Perplexity API Key saved!");
-      setMessages(prev => [...prev, {from: "bot", text: "API Key saved. I can now use advanced AI!"}]);
+      toast.success("Perplexity API Key saved! Now using Perplexity AI.");
+      setMessages(prev => [...prev, {from: "bot", text: "API Key saved. I'm now using Perplexity AI for enhanced responses!", type: "ai-powered"}]);
     } else {
       localStorage.removeItem("perplexityApiKey");
       setPerplexityApiKey(null);
-      toast.info("Perplexity API Key removed.");
-       setMessages(prev => [...prev, {from: "bot", text: "API Key removed. My AI capabilities are now limited to FAQs."}]);
+      setAiMode('huggingface');
+      toast.info("Switched to open-source AI mode.");
+      setMessages(prev => [...prev, {from: "bot", text: "Switched to open-source AI mode. I'm still here to help!", type: "ai-powered"}]);
     }
   };
   
   const getConversationHistory = (): {role: string, content: string}[] => {
     return messages
-      .filter(msg => typeof msg.text === 'string' && msg.type !== 'typing' && msg.type !== 'error') // Filter out non-string messages and special types
+      .filter(msg => typeof msg.text === 'string' && msg.type !== 'typing' && msg.type !== 'error')
       .map(msg => ({
         role: msg.from === 'user' ? 'user' : 'assistant',
-        content: msg.text as string, // We've filtered to ensure text is string
+        content: msg.text as string,
       }));
   };
 
@@ -110,13 +114,20 @@ const RevyChatBot = () => {
     setMessages(prev => [...prev, { from: "user", text: trimmedInput }]);
     setInput("");
     setIsAiThinking(true);
-    setMessages(prev => [...prev, { from: "bot", text: "Revy is thinking...", type: "typing" }]);
+    setMessages(prev => [...prev, { 
+      from: "bot", 
+      text: aiMode === 'huggingface' ? "🧠 Processing with open-source AI..." : "🤖 Revy is thinking...", 
+      type: "typing" 
+    }]);
 
     let botResponse: string | React.ReactNode | null = null;
     const conversationHistory = getConversationHistory();
 
-    if (perplexityApiKey) {
+    // Try AI response first
+    if (aiMode === 'perplexity' && perplexityApiKey) {
       botResponse = await getPerplexityResponse(trimmedInput, perplexityApiKey, conversationHistory.slice(0, -1)); 
+    } else {
+      botResponse = await getHuggingFaceResponse(trimmedInput, conversationHistory.slice(0, -1));
     }
     
     setMessages(prev => prev.filter(msg => msg.type !== "typing"));
@@ -124,45 +135,41 @@ const RevyChatBot = () => {
 
     if (typeof botResponse === 'string' && 
         !botResponse.startsWith("Sorry, I encountered an issue") && 
-        !botResponse.startsWith("It seems there's an issue with your Perplexity API key")) {
-      setMessages(prev => [...prev, { from: "bot", text: botResponse }]);
+        !botResponse.startsWith("It seems there's an issue with your Perplexity API key") &&
+        !botResponse.startsWith("I'm currently loading my AI capabilities")) {
+      setMessages(prev => [...prev, { from: "bot", text: botResponse, type: "ai-powered" }]);
     } else {
       if (typeof botResponse === 'string' && 
           (botResponse.startsWith("Sorry, I encountered an issue") || 
-           botResponse.startsWith("It seems there's an issue with your Perplexity API key"))) {
+           botResponse.startsWith("It seems there's an issue with your Perplexity API key") ||
+           botResponse.startsWith("I'm currently loading my AI capabilities"))) {
          setMessages(prev => [...prev, { from: "bot", text: botResponse, type: "error" }]);
       }
-      // Fallback to FAQ if Perplexity response was an error or not available
-      // We only add FAQ if Perplexity didn't provide a valid non-error response.
-      // The check `typeof botResponse === 'string'` already ensures that if we are in this `else` block
-      // and `botResponse` was a string, it must have been an error string.
-      // So, if botResponse was null (no API key) or an error string, we try FAQ.
-      if (!(typeof botResponse === 'string' && !botResponse.startsWith("Sorry, I encountered an issue") && !botResponse.startsWith("It seems there's an issue with your Perplexity API key"))) {
-        const faqAnswer = findAnswer(trimmedInput);
-        if (faqAnswer) {
-          setMessages(prev => [...prev, { from: "bot", text: faqAnswer }]);
-        } else if (!botResponse || (typeof botResponse === 'string' && (botResponse.startsWith("Sorry, I encountered an issue") || botResponse.startsWith("It seems there's an issue with your Perplexity API key")))) {
-          // Only show this generic fallback if no FAQ and Perplexity had issues or wasn't used.
-          setMessages(prev => [
-            ...prev,
-            {
-              from: "bot",
-              text: (
-                <>
-                  Sorry, I couldn't answer that based on my current knowledge or FAQs.
-                  <br />
-                  <span>
-                    <WhatsAppButton
-                      message={trimmedInput}
-                      number={WHATSAPP_NUMBER}
-                    />
-                  </span>
-                </>
-              ),
-              type: "error",
-            }
-          ]);
-        }
+      
+      // Try FAQ as fallback
+      const faqAnswer = findAnswer(trimmedInput);
+      if (faqAnswer) {
+        setMessages(prev => [...prev, { from: "bot", text: faqAnswer }]);
+      } else if (!botResponse || (typeof botResponse === 'string' && (botResponse.startsWith("Sorry, I encountered an issue") || botResponse.startsWith("It seems there's an issue with your Perplexity API key")))) {
+        setMessages(prev => [
+          ...prev,
+          {
+            from: "bot",
+            text: (
+              <>
+                I'm still learning! For immediate help, feel free to contact us directly:
+                <br />
+                <span>
+                  <WhatsAppButton
+                    message={trimmedInput}
+                    number={WHATSAPP_NUMBER}
+                  />
+                </span>
+              </>
+            ),
+            type: "error",
+          }
+        ]);
       }
     }
   };
@@ -171,12 +178,17 @@ const RevyChatBot = () => {
     <>
       {/* Floating Chat Button */}
       <button
-        className="fixed z-50 bottom-6 right-6 bg-gradient-to-r from-blue-600 to-purple-600 shadow-xl rounded-full w-16 h-16 flex items-center justify-center text-white text-3xl hover:scale-110 transition-all border-4 border-white"
+        className="fixed z-50 bottom-6 right-6 bg-gradient-to-r from-blue-500 via-purple-600 to-blue-700 shadow-2xl rounded-full w-16 h-16 flex items-center justify-center text-white hover:scale-110 transition-all duration-300 border-4 border-white/20 hover:border-white/40"
         onClick={() => setOpen(v => !v)}
         aria-label={open ? "Close chat with Revy" : "Open chat with Revy"}
-        style={{ boxShadow: "0 4px 24px rgba(110, 93, 185, 0.2)" }}
+        style={{ 
+          boxShadow: "0 8px 32px rgba(59, 130, 246, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)" 
+        }}
       >
-        <img src={REVY_LOGO_URL} alt="Revy Chat Icon" className="w-10 h-10 rounded-full object-cover" />
+        <div className="relative">
+          <img src={REVY_LOGO_URL} alt="Revy Chat Icon" className="w-10 h-10 rounded-full object-cover" />
+          <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
+        </div>
       </button>
 
       {/* "Ask Revy" Tooltip */}
@@ -187,51 +199,56 @@ const RevyChatBot = () => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20, transition: { duration: 0.2 } }}
             transition={{ type: "spring", stiffness: 300, damping: 25, duration: 0.3 }}
-            className="fixed z-40 bottom-9 right-24 bg-white text-sm text-slate-800 px-3 py-2 rounded-lg shadow-xl border border-slate-200 whitespace-nowrap font-medium"
+            className="fixed z-40 bottom-9 right-24 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm px-4 py-2 rounded-lg shadow-xl border border-white/20 whitespace-nowrap font-medium"
           >
-            Ask Revy 🤖
+            Ask Revy 🧠✨
           </motion.div>
         )}
       </AnimatePresence>
 
-
       {/* Chat Window */}
       {open && (
         <div className="fixed z-50 bottom-24 right-6 w-80 max-w-[92vw] bg-white border border-blue-200 rounded-xl shadow-2xl flex flex-col animate-fade-in-up">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-blue-100 bg-gradient-to-r from-blue-600 to-purple-600 rounded-t-xl">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-blue-100 bg-gradient-to-r from-blue-500 via-purple-600 to-blue-700 rounded-t-xl">
             <span className="font-bold text-white text-lg flex items-center gap-2">
               <Avatar className="h-7 w-7 border-2 border-white/50">
                 <AvatarImage src={REVY_LOGO_URL} alt="Revy Chatbot" />
                 <AvatarFallback>R</AvatarFallback>
               </Avatar>
-              Revy
+              <div className="flex flex-col">
+                <span>Revy</span>
+                <span className="text-xs opacity-80 flex items-center gap-1">
+                  <Sparkles size={10} />
+                  {aiMode === 'huggingface' ? 'Open-Source AI' : 'Perplexity AI'}
+                </span>
+              </div>
             </span>
             <div className="flex items-center gap-2">
-                <button
-                    onClick={() => setShowApiKeyInput(prev => !prev)}
-                    className="text-white hover:text-gray-200 transition-colors"
-                    aria-label="API Key Settings"
-                >
-                    <Settings size={20} />
-                </button>
-                <button
+              <button
+                onClick={() => setShowApiKeyInput(prev => !prev)}
+                className="text-white hover:text-gray-200 transition-colors"
+                aria-label="API Key Settings"
+              >
+                <Settings size={20} />
+              </button>
+              <button
                 onClick={() => setOpen(false)}
                 className="text-white text-xl px-1 focus:outline-none hover:text-gray-200 transition-colors"
                 aria-label="Close chat"
-                >
+              >
                 ×
-                </button>
+              </button>
             </div>
           </div>
 
           {showApiKeyInput && (
-            <div className="p-3 border-b border-blue-100 bg-gray-50">
+            <div className="p-3 border-b border-blue-100 bg-gradient-to-r from-blue-50 to-purple-50">
               <label htmlFor="perplexityApiKey" className="block text-sm font-medium text-gray-700 mb-1">
-                Perplexity API Key
+                Perplexity API Key (Optional)
               </label>
               <div className="flex gap-2">
                 <Input
-                  type="password" // Use password type to obscure key
+                  type="password"
                   id="perplexityApiKey"
                   placeholder="Enter your API key"
                   value={tempApiKey}
@@ -241,7 +258,7 @@ const RevyChatBot = () => {
                 <Button onClick={handleSaveApiKey} size="sm">Save</Button>
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                Get your key from Perplexity Labs. Stored in local browser storage.
+                Leave empty to use free open-source AI. Add key for enhanced Perplexity AI.
               </p>
             </div>
           )}
@@ -259,13 +276,22 @@ const RevyChatBot = () => {
                   </Avatar>
                 )}
                 <div
-                  className={`rounded-xl px-4 py-2 shadow-sm
+                  className={`rounded-xl px-4 py-2 shadow-sm relative
                     ${msg.from === "bot"
-                    ? (msg.type === "error" ? "bg-red-100 text-red-700" : "bg-blue-50 text-gray-800")
-                    : "bg-purple-600 text-white"}
+                    ? (msg.type === "error" 
+                        ? "bg-red-100 text-red-700" 
+                        : msg.type === "ai-powered"
+                        ? "bg-gradient-to-r from-blue-50 to-purple-50 text-gray-800 border border-blue-200"
+                        : "bg-blue-50 text-gray-800")
+                    : "bg-gradient-to-r from-blue-500 to-purple-600 text-white"}
                   `}
                   style={{ maxWidth: msg.from === 'bot' ? 'calc(100% - 2.75rem)' : '85%'}}
                 >
+                  {msg.type === "ai-powered" && (
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
+                      <Sparkles size={8} className="text-white" />
+                    </div>
+                  )}
                   {msg.text}
                 </div>
               </div>
@@ -274,24 +300,24 @@ const RevyChatBot = () => {
           </div>
           <form
             onSubmit={handleSend}
-            className="p-3 border-t border-blue-100 bg-gray-50 rounded-b-xl flex items-center gap-2"
+            className="p-3 border-t border-blue-100 bg-gradient-to-r from-gray-50 to-blue-50 rounded-b-xl flex items-center gap-2"
             autoComplete="off"
           >
             <input
               ref={inputRef}
               type="text"
-              className="flex-1 px-4 py-2 rounded-lg border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              placeholder="Type your question..."
+              className="flex-1 px-4 py-2 rounded-lg border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
+              placeholder="Ask me anything..."
               value={input}
               onChange={e => setInput(e.target.value)}
               maxLength={300}
               autoFocus
-              disabled={isAiThinking} // Disable input while AI is thinking
+              disabled={isAiThinking}
             />
             <button
               type="submit"
-              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3 rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none transition-all flex items-center justify-center aspect-square"
-              disabled={!input.trim() || isAiThinking} // Disable button while AI is thinking
+              className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-3 rounded-lg hover:from-blue-600 hover:to-purple-700 focus:outline-none transition-all flex items-center justify-center aspect-square shadow-lg hover:shadow-xl disabled:opacity-50"
+              disabled={!input.trim() || isAiThinking}
               aria-label="Send message"
             >
               <SendHorizontal size={20} />
