@@ -29,14 +29,14 @@ const Hero = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center max-w-4xl mx-auto">
           {/* Company Logo - Made Round and Animated */}
-          <div className="mb-8 flex justify-center ml-12">
+          <div className="mb-8 flex justify-center ml-16">
             <div className="relative group">
               <div className="absolute -inset-4 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full blur-lg opacity-30 group-hover:opacity-50 transition-all duration-500 animate-pulse"></div>
               <div className="relative w-48 h-48 md:w-64 md:h-64 rounded-full overflow-hidden border-4 border-white/20 backdrop-blur-sm shadow-2xl transform hover:scale-110 transition-all duration-500 animate-fade-in">
                 <img 
                   src="/lovable-uploads/b7fe417c-7ef1-4666-a384-d9bd5e26da84.png" 
                   alt="ReView AI Logo" 
-                  className="w-full h-full object-cover object-center"
+                  className="w-full h-full object-cover object-center filter brightness-110 contrast-110 saturate-110"
                 />
               </div>
             </div>
