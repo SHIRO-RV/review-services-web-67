@@ -10,6 +10,7 @@ import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
 import WelcomePopup from '../components/WelcomePopup';
 import Testimonials from '../components/Testimonials';
+import Portfolio from '../components/Portfolio';
 
 const Index = () => {
   const scrollToContact = () => {
@@ -25,6 +26,7 @@ const Index = () => {
       <Hero />
       <About />
       <Testimonials />
+      <Portfolio />
       <Services />
       <Mission />
       <Team />
