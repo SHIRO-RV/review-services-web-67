@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -33,7 +32,7 @@ const Navbar = () => {
             <div className="relative">
               <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-primary/30 group-hover:border-primary/50 transition-all duration-300 group-hover:scale-110 shadow-lg">
                 <img 
-                  src="/lovable-uploads/b7fe417c-7ef1-4666-a384-d9bd5e26da84.png" 
+                  src="/lovable-uploads/f7e698c3-40a5-4d57-8b40-0e22e9e4bf9a.png" 
                   alt="ReView AI Logo" 
                   className="w-full h-full object-cover"
                 />
@@ -43,6 +42,7 @@ const Navbar = () => {
               RE-VIEW
             </h1>
           </Link>
+          
           
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-1">

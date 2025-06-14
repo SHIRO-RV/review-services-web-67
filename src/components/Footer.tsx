@@ -16,7 +16,7 @@ const Footer = () => {
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center space-x-3 mb-4 ml-16">
               <img 
-                src="/lovable-uploads/b7fe417c-7ef1-4666-a384-d9bd5e26da84.png" 
+                src="/lovable-uploads/f7e698c3-40a5-4d57-8b40-0e22e9e4bf9a.png" 
                 alt="ReView AI Logo" 
                 className="w-10 h-10 object-contain"
               />

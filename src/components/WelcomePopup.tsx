@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -51,9 +50,9 @@ const WelcomePopup = ({ onContactClick }: WelcomePopupProps) => {
             <div className="relative">
               <div className="w-20 h-20 rounded-full overflow-hidden border-3 border-primary/20 shadow-xl">
                 <img 
-                  src="/lovable-uploads/b7fe417c-7ef1-4666-a384-d9bd5e26da84.png" 
+                  src="/lovable-uploads/f7e698c3-40a5-4d57-8b40-0e22e9e4bf9a.png" 
                   alt="ReView AI Logo" 
-                  className="w-full h-full object-cover object-center filter brightness-110 contrast-110"
+                  className="w-full h-full object-cover object-center"
                 />
               </div>
               <motion.div
