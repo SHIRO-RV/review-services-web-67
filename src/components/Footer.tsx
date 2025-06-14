@@ -10,35 +10,37 @@ const Footer = () => {
   };
 
   return (
-    <footer className="bg-white text-gray-800 py-16"> {/* Changed bg to white, text to gray-800 */}
+    <footer className="bg-gray-50 text-gray-800 py-16">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="col-span-2 md:col-span-1">
-            <div className="flex items-center space-x-3 mb-4"> {/* Removed ml-16 to align with other content if needed, or keep for specific design */}
+            <div className="flex items-center space-x-3 mb-4">
               <img 
                 src="/lovable-uploads/f7e698c3-40a5-4d57-8b40-0e22e9e4bf9a.png" 
                 alt="ReView AI Logo" 
                 className="w-10 h-10 object-contain"
+                loading="lazy"
+                decoding="async"
               />
               <h3 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
                 RE-VIEW
               </h3>
             </div>
-            <p className="text-gray-600 mb-6 leading-relaxed"> {/* Changed text-gray-400 to text-gray-600 */}
+            <p className="text-gray-600 mb-6 leading-relaxed">
               Pioneering AI-powered solutions and cutting-edge technology services. Founded by visionary minds, building tomorrow's digital landscape today.
             </p>
-            <div className="text-sm text-gray-500"> {/* Kept text-gray-500, should be okay on white */}
+            <div className="text-sm text-gray-500">
               © 2025 ReView AI Tech and Solutions
             </div>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h4 className="text-lg font-semibold mb-4 text-gray-800">Quick Links</h4> {/* Added text-gray-800 */}
+            <h4 className="text-lg font-semibold mb-4 text-gray-800">Quick Links</h4>
             <ul className="space-y-2">
               <li>
-                <button onClick={() => scrollToSection('home')} className="text-gray-600 hover:text-primary transition-colors"> {/* Changed text colors */}
+                <button onClick={() => scrollToSection('home')} className="text-gray-600 hover:text-primary transition-colors">
                   Home
                 </button>
               </li>
@@ -62,8 +64,8 @@ const Footer = () => {
 
           {/* Services */}
           <div>
-            <h4 className="text-lg font-semibold mb-4 text-gray-800">Services</h4> {/* Added text-gray-800 */}
-            <ul className="space-y-2 text-gray-600"> {/* Changed text-gray-400 to text-gray-600 */}
+            <h4 className="text-lg font-semibold mb-4 text-gray-800">Services</h4>
+            <ul className="space-y-2 text-gray-600">
               <li>Custom Software Development</li>
               <li>AI Solutions & Automation</li>
               <li>UI/UX Design</li>
@@ -74,8 +76,8 @@ const Footer = () => {
 
           {/* Contact Info */}
           <div>
-            <h4 className="text-lg font-semibold mb-4 text-gray-800">Contact</h4> {/* Added text-gray-800 */}
-            <ul className="space-y-2 text-gray-600"> {/* Changed text-gray-400 to text-gray-600 */}
+            <h4 className="text-lg font-semibold mb-4 text-gray-800">Contact</h4>
+            <ul className="space-y-2 text-gray-600">
               <li>📧 reviewrv25@gmail.com</li>
               <li>📞 +91 8341105135</li>
               <li>🕘 9 AM – 5 PM IST</li>
@@ -84,12 +86,12 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="border-t border-gray-200 mt-12 pt-8"> {/* Changed border-gray-800 to border-gray-200 */}
+        <div className="border-t border-gray-200 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="text-gray-600 text-sm mb-4 md:mb-0"> {/* Changed text-gray-400 to text-gray-600 */}
+            <div className="text-gray-600 text-sm mb-4 md:mb-0">
               Built with passion by the ReView AI team
             </div>
-            <div className="text-gray-600 text-sm"> {/* Changed text-gray-400 to text-gray-600 */}
+            <div className="text-gray-600 text-sm">
               www.reviewrv25.com
             </div>
           </div>

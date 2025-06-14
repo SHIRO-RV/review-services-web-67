@@ -66,6 +66,7 @@ const Testimonials = () => (
                 alt={t.name}
                 className="w-20 h-20 rounded-full mb-4 object-cover border-4 border-blue-100 shadow"
                 loading="lazy"
+                decoding="async"
               />
               <p className="italic text-gray-700 mb-6 leading-relaxed">"{t.quote}"</p>
               <div>
@@ -86,6 +87,7 @@ const Testimonials = () => (
               alt={logo.name}
               className="h-12 grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all duration-300 bg-white rounded-lg shadow px-4 py-2"
               loading="lazy"
+              decoding="async"
             />
           ))}
         </div>
