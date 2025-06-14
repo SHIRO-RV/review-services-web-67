@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Hero from '../components/Hero';
 import About from '../components/About';
@@ -12,7 +11,7 @@ import Navbar from '../components/Navbar';
 import WelcomePopup from '../components/WelcomePopup';
 import Testimonials from '../components/Testimonials';
 import Portfolio from '../components/Portfolio';
-+import RevyChatBot from '../components/RevyChatBot';
+import RevyChatBot from '../components/RevyChatBot';
 
 const Index = () => {
   const scrollToContact = () => {
@@ -36,7 +35,7 @@ const Index = () => {
       <Contact />
       <Footer />
       <WelcomePopup onContactClick={scrollToContact} />
-+     <RevyChatBot />
+      <RevyChatBot />
     </div>
   );
 };

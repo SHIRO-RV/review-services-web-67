@@ -1,9 +1,8 @@
-
 import React from 'react';
 import Navbar from '../components/Navbar';
 import Services from '../components/Services';
 import Footer from '../components/Footer';
-+import RevyChatBot from '../components/RevyChatBot';
+import RevyChatBot from '../components/RevyChatBot';
 
 const ServicesPage = () => {
   return (
@@ -13,7 +12,7 @@ const ServicesPage = () => {
         <Services />
       </div>
       <Footer />
-+     <RevyChatBot />
+      <RevyChatBot />
     </div>
   );
 };
