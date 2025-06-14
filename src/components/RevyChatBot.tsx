@@ -15,7 +15,7 @@ const REVY_LOGO_URL = "/lovable-uploads/e386a7d6-7e49-4326-9a62-5226b96d6577.png
 interface Message {
   from: "user" | "bot";
   text: string | React.ReactNode;
-  type?: "typing" | "error" | "ai-powered";
+  type?: "typing" | "error" | "ai-powered" | "fallback";
 }
 
 const RevyChatBot = () => {
@@ -23,7 +23,7 @@ const RevyChatBot = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       from: "bot",
-      text: "Hi! I'm Revy 🤖. I'm powered by open-source AI and can help you with questions about ReView AI's services. Ask me anything!",
+      text: "Hi! I'm Revy 🤖. I'm here to help you with questions about ReView AI's services. Ask me anything!",
       type: "ai-powered"
     }
   ]);
@@ -35,7 +35,7 @@ const RevyChatBot = () => {
   const [tempApiKey, setTempApiKey] = useState<string>("");
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
   const [isAiThinking, setIsAiThinking] = useState(false);
-  const [aiMode, setAiMode] = useState<'huggingface' | 'perplexity'>('huggingface');
+  const [aiMode, setAiMode] = useState<'simple' | 'perplexity'>('simple');
 
   useEffect(() => {
     const storedApiKey = localStorage.getItem("perplexityApiKey");
@@ -57,19 +57,17 @@ const RevyChatBot = () => {
     let intervalId: NodeJS.Timeout | undefined;
 
     if (!open) {
-      // Initial display after a short delay to avoid immediate pop-up on load
       tooltipTimeoutId = setTimeout(() => {
         setShowAskRevyTooltip(true);
-        tooltipTimeoutId = setTimeout(() => setShowAskRevyTooltip(false), 3000); // Show for 3s
-      }, 2000); // Show initial tooltip after 2 seconds
-
+        tooltipTimeoutId = setTimeout(() => setShowAskRevyTooltip(false), 3000);
+      }, 2000);
 
       intervalId = setInterval(() => {
         setShowAskRevyTooltip(true);
-        tooltipTimeoutId = setTimeout(() => setShowAskRevyTooltip(false), 3000); // Show for 3s
-      }, 8000 + 3000); // Every 8s (plus 3s display time to ensure 8s gap)
+        tooltipTimeoutId = setTimeout(() => setShowAskRevyTooltip(false), 3000);
+      }, 8000 + 3000);
     } else {
-      setShowAskRevyTooltip(false); // Hide if chat opens
+      setShowAskRevyTooltip(false);
       if (tooltipTimeoutId) clearTimeout(tooltipTimeoutId);
       if (intervalId) clearInterval(intervalId);
     }
@@ -91,9 +89,9 @@ const RevyChatBot = () => {
     } else {
       localStorage.removeItem("perplexityApiKey");
       setPerplexityApiKey(null);
-      setAiMode('huggingface');
-      toast.info("Switched to open-source AI mode.");
-      setMessages(prev => [...prev, {from: "bot", text: "Switched to open-source AI mode. I'm still here to help!", type: "ai-powered"}]);
+      setAiMode('simple');
+      toast.info("Switched to simple AI mode.");
+      setMessages(prev => [...prev, {from: "bot", text: "Switched to simple AI mode. I'm still here to help!", type: "ai-powered"}]);
     }
   };
   
@@ -106,6 +104,40 @@ const RevyChatBot = () => {
       }));
   };
 
+  const isUnsupportedQuery = (question: string): boolean => {
+    const normalized = question.toLowerCase();
+    
+    // Complex technical questions that need human expertise
+    const complexPatterns = [
+      "how to code",
+      "write code for",
+      "programming help",
+      "debug my code",
+      "sql query",
+      "database design",
+      "algorithm",
+      "technical documentation",
+      "system architecture",
+      "api integration",
+      "complex calculation",
+      "mathematical formula"
+    ];
+    
+    // Very specific business requests
+    const specificBusinessPatterns = [
+      "exact pricing",
+      "detailed proposal",
+      "contract terms",
+      "legal advice",
+      "specific timeline for my project",
+      "custom quote",
+      "project estimation"
+    ];
+    
+    return complexPatterns.some(pattern => normalized.includes(pattern)) ||
+           specificBusinessPatterns.some(pattern => normalized.includes(pattern));
+  };
+
   const handleSend = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const trimmedInput = input.trim();
@@ -116,14 +148,40 @@ const RevyChatBot = () => {
     setIsAiThinking(true);
     setMessages(prev => [...prev, { 
       from: "bot", 
-      text: aiMode === 'huggingface' ? "🧠 Processing with open-source AI..." : "🤖 Revy is thinking...", 
+      text: aiMode === 'simple' ? "🤔 Let me think about that..." : "🤖 Revy is thinking...", 
       type: "typing" 
     }]);
 
-    let botResponse: string | React.ReactNode | null = null;
+    let botResponse: string | null = null;
     const conversationHistory = getConversationHistory();
 
-    // Try AI response first
+    // Check if this is an unsupported query first
+    if (isUnsupportedQuery(trimmedInput)) {
+      setMessages(prev => prev.filter(msg => msg.type !== "typing"));
+      setIsAiThinking(false);
+      setMessages(prev => [
+        ...prev,
+        {
+          from: "bot",
+          text: (
+            <>
+              This looks like a complex question that would be better handled by our expert team! They can provide detailed, personalized assistance.
+              <br />
+              <span>
+                <WhatsAppButton
+                  message={`Hi! I have a question: ${trimmedInput}`}
+                  number={WHATSAPP_NUMBER}
+                />
+              </span>
+            </>
+          ),
+          type: "fallback",
+        }
+      ]);
+      return;
+    }
+
+    // Try AI response
     if (aiMode === 'perplexity' && perplexityApiKey) {
       botResponse = await getPerplexityResponse(trimmedInput, perplexityApiKey, conversationHistory.slice(0, -1)); 
     } else {
@@ -133,44 +191,36 @@ const RevyChatBot = () => {
     setMessages(prev => prev.filter(msg => msg.type !== "typing"));
     setIsAiThinking(false);
 
+    // Check if AI response indicates an error or inability to help
     if (typeof botResponse === 'string' && 
-        !botResponse.startsWith("Sorry, I encountered an issue") && 
-        !botResponse.startsWith("It seems there's an issue with your Perplexity API key") &&
-        !botResponse.startsWith("I'm currently loading my AI capabilities")) {
-      setMessages(prev => [...prev, { from: "bot", text: botResponse, type: "ai-powered" }]);
-    } else {
-      if (typeof botResponse === 'string' && 
-          (botResponse.startsWith("Sorry, I encountered an issue") || 
-           botResponse.startsWith("It seems there's an issue with your Perplexity API key") ||
-           botResponse.startsWith("I'm currently loading my AI capabilities"))) {
-         setMessages(prev => [...prev, { from: "bot", text: botResponse, type: "error" }]);
-      }
+        (botResponse.includes("having trouble") || 
+         botResponse.includes("connect you with our team") ||
+         botResponse.includes("API key") ||
+         botResponse.length < 20)) {
       
-      // Try FAQ as fallback
-      const faqAnswer = findAnswer(trimmedInput);
-      if (faqAnswer) {
-        setMessages(prev => [...prev, { from: "bot", text: faqAnswer }]);
-      } else if (!botResponse || (typeof botResponse === 'string' && (botResponse.startsWith("Sorry, I encountered an issue") || botResponse.startsWith("It seems there's an issue with your Perplexity API key")))) {
-        setMessages(prev => [
-          ...prev,
-          {
-            from: "bot",
-            text: (
-              <>
-                I'm still learning! For immediate help, feel free to contact us directly:
-                <br />
-                <span>
-                  <WhatsAppButton
-                    message={trimmedInput}
-                    number={WHATSAPP_NUMBER}
-                  />
-                </span>
-              </>
-            ),
-            type: "error",
-          }
-        ]);
-      }
+      // Show fallback with WhatsApp option
+      setMessages(prev => [
+        ...prev,
+        {
+          from: "bot",
+          text: (
+            <>
+              I'm not able to provide a good answer for that right now. Our team can help you better with detailed questions!
+              <br />
+              <span>
+                <WhatsAppButton
+                  message={`Hi! I need help with: ${trimmedInput}`}
+                  number={WHATSAPP_NUMBER}
+                />
+              </span>
+            </>
+          ),
+          type: "fallback",
+        }
+      ]);
+    } else {
+      // Show successful AI response
+      setMessages(prev => [...prev, { from: "bot", text: botResponse, type: "ai-powered" }]);
     }
   };
 
@@ -219,7 +269,7 @@ const RevyChatBot = () => {
                 <span>Revy</span>
                 <span className="text-xs opacity-80 flex items-center gap-1">
                   <Sparkles size={10} />
-                  {aiMode === 'huggingface' ? 'Open-Source AI' : 'Perplexity AI'}
+                  {aiMode === 'simple' ? 'Simple AI' : 'Perplexity AI'}
                 </span>
               </div>
             </span>
@@ -258,7 +308,7 @@ const RevyChatBot = () => {
                 <Button onClick={handleSaveApiKey} size="sm">Save</Button>
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                Leave empty to use free open-source AI. Add key for enhanced Perplexity AI.
+                Leave empty to use simple AI. Add key for enhanced Perplexity AI.
               </p>
             </div>
           )}
@@ -282,12 +332,14 @@ const RevyChatBot = () => {
                         ? "bg-red-100 text-red-700" 
                         : msg.type === "ai-powered"
                         ? "bg-gradient-to-r from-blue-50 to-purple-50 text-gray-800 border border-blue-200"
+                        : msg.type === "fallback"
+                        ? "bg-gradient-to-r from-orange-50 to-yellow-50 text-gray-800 border border-orange-200"
                         : "bg-blue-50 text-gray-800")
                     : "bg-gradient-to-r from-blue-500 to-purple-600 text-white"}
                   `}
                   style={{ maxWidth: msg.from === 'bot' ? 'calc(100% - 2.75rem)' : '85%'}}
                 >
-                  {msg.type === "ai-powered" && (
+                  {(msg.type === "ai-powered" || msg.type === "fallback") && (
                     <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
                       <Sparkles size={8} className="text-white" />
                     </div>

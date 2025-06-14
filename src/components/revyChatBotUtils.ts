@@ -3,8 +3,6 @@
  * Utility functions and constants for RevyChatBot.
  */
 
-import { pipeline } from '@huggingface/transformers';
-
 export const FAQS = [
   {
     q: [
@@ -96,66 +94,55 @@ export function findAnswer(question: string): string | null {
   return null;
 }
 
-// Initialize the text generation pipeline (cached after first load)
-let textGenerator: any = null;
+// Simple pattern-based AI responses (fallback when models don't work)
+export function getSimpleAIResponse(question: string): string {
+  const normalized = question.toLowerCase();
+  
+  // Greeting patterns
+  if (normalized.includes("hello") || normalized.includes("hi") || normalized.includes("hey")) {
+    return "Hello! I'm Revy, your AI assistant for ReView AI. How can I help you today?";
+  }
+  
+  // Help patterns
+  if (normalized.includes("help") || normalized.includes("what can you do")) {
+    return "I can help you with questions about ReView AI's services, including web development, mobile apps, AI solutions, and consulting. What would you like to know?";
+  }
+  
+  // Thank you patterns
+  if (normalized.includes("thank") || normalized.includes("thanks")) {
+    return "You're welcome! Is there anything else I can help you with regarding ReView AI's services?";
+  }
+  
+  // Technology questions
+  if (normalized.includes("technology") || normalized.includes("tech stack")) {
+    return "We work with modern technologies including React, Node.js, Python, mobile development frameworks, and AI/ML tools to build cutting-edge solutions.";
+  }
+  
+  // Generic business questions
+  if (normalized.includes("why choose") || normalized.includes("why review ai")) {
+    return "ReView AI combines technical expertise with creative design to deliver custom solutions that drive business growth. We focus on quality, innovation, and client satisfaction.";
+  }
+  
+  return "I'm here to help with questions about ReView AI's services! For complex queries or detailed discussions, feel free to reach out to our team directly.";
+}
 
 export async function getHuggingFaceResponse(question: string, conversationHistory: {role: string, content: string}[]): Promise<string> {
   try {
-    console.log('Initializing Hugging Face AI model...');
+    console.log('Attempting to use simple AI response...');
     
-    // Initialize the model if not already done
-    if (!textGenerator) {
-      textGenerator = await pipeline(
-        'text-generation',
-        'microsoft/DialoGPT-small',
-        { 
-          device: 'cpu',
-          dtype: 'fp32'
-        }
-      );
+    // First try FAQ
+    const faqAnswer = findAnswer(question);
+    if (faqAnswer) {
+      return faqAnswer;
     }
-
-    // Create context from conversation history
-    const context = conversationHistory
-      .slice(-6) // Keep last 6 messages for context
-      .map(msg => `${msg.role === 'user' ? 'Human' : 'Assistant'}: ${msg.content}`)
-      .join('\n');
-
-    // Create a prompt with ReView AI context
-    const prompt = `You are Revy, a helpful AI assistant for ReView AI, a web solutions agency that creates custom software, apps, AI-powered tools, UI/UX design, and consulting services. Be friendly, concise, and helpful.
-
-Context: ${context}
-Human: ${question}
-Assistant:`;
-
-    const response = await textGenerator(prompt, {
-      max_new_tokens: 100,
-      temperature: 0.7,
-      do_sample: true,
-      pad_token_id: 50256
-    });
-
-    // Extract the generated text
-    let generatedText = response[0].generated_text;
     
-    // Clean up the response to get just the assistant's reply
-    const assistantIndex = generatedText.lastIndexOf('Assistant:');
-    if (assistantIndex !== -1) {
-      generatedText = generatedText.substring(assistantIndex + 10).trim();
-    }
-
-    // Remove any remaining conversation artifacts
-    generatedText = generatedText.split('\n')[0].trim();
+    // Then try simple pattern matching
+    const simpleResponse = getSimpleAIResponse(question);
+    return simpleResponse;
     
-    // Ensure it's not empty and makes sense
-    if (!generatedText || generatedText.length < 10) {
-      return "I'm here to help with any questions about ReView AI's services! Feel free to ask about our web development, app creation, or AI solutions.";
-    }
-
-    return generatedText;
   } catch (error) {
-    console.error("Failed to get response from Hugging Face AI:", error);
-    return "I'm currently loading my AI capabilities. In the meantime, I can help with frequently asked questions about ReView AI!";
+    console.error("AI processing error:", error);
+    return "I'm having trouble understanding that question right now. Let me connect you with our team for better assistance!";
   }
 }
 
@@ -204,6 +191,6 @@ export async function getPerplexityResponse(question: string, apiKey: string, co
     if (error instanceof Error && error.message.includes("401")) {
         return "It seems there's an issue with your Perplexity API key. Please check it and try again.";
     }
-    return "Sorry, I encountered an issue trying to connect to the AI. Please try again later.";
+    return "I'm having trouble connecting to the AI right now. Let me help you get in touch with our team directly!";
   }
 }
