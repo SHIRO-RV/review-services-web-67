@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowDown } from 'lucide-react';
@@ -67,7 +68,7 @@ const Hero = () => {
               <Button 
                 variant="outline" 
                 size="lg"
-                className="border-2 border-white/40 text-white hover:bg-white hover:text-slate-900 hover:border-white px-8 py-6 text-lg font-semibold rounded-full backdrop-blur-sm transition-all duration-300 transform hover:scale-105"
+                className="border-2 border-white/40 text-black hover:bg-white hover:text-black hover:border-white px-8 py-6 text-lg font-semibold rounded-full backdrop-blur-sm transition-all duration-300 transform hover:scale-105"
               >
                 Get Free Consultation
               </Button>
@@ -89,3 +90,4 @@ const Hero = () => {
 };
 
 export default Hero;
+
