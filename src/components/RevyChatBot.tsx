@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { SendHorizontal, Settings, MessageSquare, Sparkles } from "lucide-react";
 import WhatsAppButton from "./WhatsAppButton";
@@ -138,6 +137,18 @@ const RevyChatBot = () => {
            specificBusinessPatterns.some(pattern => normalized.includes(pattern));
   };
 
+  const getFallbackMessageWithWhatsApp = (userMessage: string) => (
+    <div className="flex flex-col gap-2">
+      <div>
+        I'm not able to provide a good answer for that right now. Our team can help you better with detailed questions!
+      </div>
+      <WhatsAppButton
+        message={`Hi! I need help with: ${userMessage}`}
+        number={WHATSAPP_NUMBER}
+      />
+    </div>
+  );
+
   const handleSend = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const trimmedInput = input.trim();
@@ -155,7 +166,7 @@ const RevyChatBot = () => {
     let botResponse: string | null = null;
     const conversationHistory = getConversationHistory();
 
-    // Check if this is an unsupported query first
+    // Check unsupported/complex query first
     if (isUnsupportedQuery(trimmedInput)) {
       setMessages(prev => prev.filter(msg => msg.type !== "typing"));
       setIsAiThinking(false);
@@ -163,18 +174,7 @@ const RevyChatBot = () => {
         ...prev,
         {
           from: "bot",
-          text: (
-            <>
-              This looks like a complex question that would be better handled by our expert team! They can provide detailed, personalized assistance.
-              <br />
-              <span>
-                <WhatsAppButton
-                  message={`Hi! I have a question: ${trimmedInput}`}
-                  number={WHATSAPP_NUMBER}
-                />
-              </span>
-            </>
-          ),
+          text: getFallbackMessageWithWhatsApp(trimmedInput),
           type: "fallback",
         }
       ]);
@@ -191,35 +191,25 @@ const RevyChatBot = () => {
     setMessages(prev => prev.filter(msg => msg.type !== "typing"));
     setIsAiThinking(false);
 
-    // Check if AI response indicates an error or inability to help
-    if (typeof botResponse === 'string' && 
-        (botResponse.includes("having trouble") || 
-         botResponse.includes("connect you with our team") ||
-         botResponse.includes("API key") ||
-         botResponse.length < 20)) {
-      
-      // Show fallback with WhatsApp option
+    // Check if AI response indicates an error/unsure/short/unhelpful answer
+    if (
+      typeof botResponse === 'string' && 
+      (
+        botResponse.includes("having trouble") ||
+        botResponse.includes("connect you with our team") ||
+        botResponse.includes("API key") ||
+        botResponse.length < 20 // fallback for very short/unsure answers
+      )
+    ) {
       setMessages(prev => [
         ...prev,
         {
           from: "bot",
-          text: (
-            <>
-              I'm not able to provide a good answer for that right now. Our team can help you better with detailed questions!
-              <br />
-              <span>
-                <WhatsAppButton
-                  message={`Hi! I need help with: ${trimmedInput}`}
-                  number={WHATSAPP_NUMBER}
-                />
-              </span>
-            </>
-          ),
+          text: getFallbackMessageWithWhatsApp(trimmedInput),
           type: "fallback",
         }
       ]);
     } else {
-      // Show successful AI response
       setMessages(prev => [...prev, { from: "bot", text: botResponse, type: "ai-powered" }]);
     }
   };
