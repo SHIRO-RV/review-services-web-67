@@ -9,12 +9,12 @@ import { toast } from "sonner"; // Added toast
 import { motion, AnimatePresence } from "framer-motion";
 
 const WHATSAPP_NUMBER = "918341105135";
-const REVY_LOGO_URL = "/lovable-uploads/e386a7d6-7e49-4326-9a62-5226b96d6577.png"; // Using the uploaded image
+const REVY_LOGO_URL = "/lovable-uploads/e386a7d6-7e49-4326-9a62-5226b96d6577.png";
 
 interface Message {
   from: "user" | "bot";
   text: string | React.ReactNode;
-  type?: "typing" | "error"; // Added type for special messages
+  type?: "typing" | "error";
 }
 
 const RevyChatBot = () => {
@@ -34,6 +34,7 @@ const RevyChatBot = () => {
   const [tempApiKey, setTempApiKey] = useState<string>("");
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
   const [isAiThinking, setIsAiThinking] = useState(false);
+
 
   useEffect(() => {
     const storedApiKey = localStorage.getItem("perplexityApiKey");
@@ -77,7 +78,6 @@ const RevyChatBot = () => {
     };
   }, [open]);
 
-
   const handleSaveApiKey = () => {
     if (tempApiKey.trim()) {
       localStorage.setItem("perplexityApiKey", tempApiKey.trim());
@@ -102,7 +102,6 @@ const RevyChatBot = () => {
       }));
   };
 
-
   const handleSend = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const trimmedInput = input.trim();
@@ -117,43 +116,53 @@ const RevyChatBot = () => {
     const conversationHistory = getConversationHistory();
 
     if (perplexityApiKey) {
-      botResponse = await getPerplexityResponse(trimmedInput, perplexityApiKey, conversationHistory.slice(0, -1)); // Exclude the current user message from history for this call as it's passed as 'question'
+      botResponse = await getPerplexityResponse(trimmedInput, perplexityApiKey, conversationHistory.slice(0, -1)); 
     }
     
-    // Remove "thinking" message
     setMessages(prev => prev.filter(msg => msg.type !== "typing"));
     setIsAiThinking(false);
 
-    if (botResponse && !botResponse.startsWith("Sorry, I encountered an issue") && !botResponse.startsWith("It seems there's an issue with your Perplexity API key")) {
+    if (typeof botResponse === 'string' && 
+        !botResponse.startsWith("Sorry, I encountered an issue") && 
+        !botResponse.startsWith("It seems there's an issue with your Perplexity API key")) {
       setMessages(prev => [...prev, { from: "bot", text: botResponse }]);
     } else {
-      if (botResponse && (botResponse.startsWith("Sorry, I encountered an issue") || botResponse.startsWith("It seems there's an issue with your Perplexity API key"))) {
+      if (typeof botResponse === 'string' && 
+          (botResponse.startsWith("Sorry, I encountered an issue") || 
+           botResponse.startsWith("It seems there's an issue with your Perplexity API key"))) {
          setMessages(prev => [...prev, { from: "bot", text: botResponse, type: "error" }]);
       }
-      // Fallback to FAQ
-      const faqAnswer = findAnswer(trimmedInput);
-      if (faqAnswer) {
-        setMessages(prev => [...prev, { from: "bot", text: faqAnswer }]);
-      } else {
-        setMessages(prev => [
-          ...prev,
-          {
-            from: "bot",
-            text: (
-              <>
-                Sorry, I couldn't answer that based on my current knowledge or FAQs.
-                <br />
-                <span>
-                  <WhatsAppButton
-                    message={trimmedInput}
-                    number={WHATSAPP_NUMBER}
-                  />
-                </span>
-              </>
-            ),
-            type: "error",
-          }
-        ]);
+      // Fallback to FAQ if Perplexity response was an error or not available
+      // We only add FAQ if Perplexity didn't provide a valid non-error response.
+      // The check `typeof botResponse === 'string'` already ensures that if we are in this `else` block
+      // and `botResponse` was a string, it must have been an error string.
+      // So, if botResponse was null (no API key) or an error string, we try FAQ.
+      if (!(typeof botResponse === 'string' && !botResponse.startsWith("Sorry, I encountered an issue") && !botResponse.startsWith("It seems there's an issue with your Perplexity API key"))) {
+        const faqAnswer = findAnswer(trimmedInput);
+        if (faqAnswer) {
+          setMessages(prev => [...prev, { from: "bot", text: faqAnswer }]);
+        } else if (!botResponse || (typeof botResponse === 'string' && (botResponse.startsWith("Sorry, I encountered an issue") || botResponse.startsWith("It seems there's an issue with your Perplexity API key")))) {
+          // Only show this generic fallback if no FAQ and Perplexity had issues or wasn't used.
+          setMessages(prev => [
+            ...prev,
+            {
+              from: "bot",
+              text: (
+                <>
+                  Sorry, I couldn't answer that based on my current knowledge or FAQs.
+                  <br />
+                  <span>
+                    <WhatsAppButton
+                      message={trimmedInput}
+                      number={WHATSAPP_NUMBER}
+                    />
+                  </span>
+                </>
+              ),
+              type: "error",
+            }
+          ]);
+        }
       }
     }
   };
