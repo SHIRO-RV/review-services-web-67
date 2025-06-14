@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Hero from '../components/Hero';
 import About from '../components/About';
@@ -10,6 +9,7 @@ import Contact from '../components/Contact';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
 import WelcomePopup from '../components/WelcomePopup';
+import Testimonials from '../components/Testimonials';
 
 const Index = () => {
   const scrollToContact = () => {
@@ -24,6 +24,7 @@ const Index = () => {
       <Navbar />
       <Hero />
       <About />
+      <Testimonials />
       <Services />
       <Mission />
       <Team />
