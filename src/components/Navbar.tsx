@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, ExternalLink } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 const Navbar = () => {
@@ -34,7 +34,7 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-24">
           <Link to="/" className="flex items-center space-x-4 group absolute left-6 z-10">
             <div className="relative">
-              <div className="w-16 h-16 rounded-full overflow-hidden border-3 border-gradient-to-r from-blue-400 to-purple-500 p-0.5 group-hover:from-blue-500 group-hover:to-purple-600 transition-all duration-300 group-hover:scale-110 shadow-lg group-hover:shadow-xl">
+              <div className="w-16 h-16 rounded-full overflow-hidden border-3 border-gradient-to-r from-blue-400 to-blue-500 p-0.5 group-hover:from-blue-500 group-hover:to-blue-600 transition-all duration-300 group-hover:scale-110 shadow-lg group-hover:shadow-xl">
                 <div className="w-full h-full rounded-full overflow-hidden bg-white">
                   <img 
                     src="/lovable-uploads/f7e698c3-40a5-4d57-8b40-0e22e9e4bf9a.png" 
@@ -45,10 +45,9 @@ const Navbar = () => {
                   />
                 </div>
               </div>
-              <div className="absolute -inset-1 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full blur opacity-30 group-hover:opacity-60 transition-opacity duration-300"></div>
             </div>
             <div className="flex flex-col">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent group-hover:from-blue-700 group-hover:via-purple-700 group-hover:to-blue-900 transition-all duration-300">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 bg-clip-text text-transparent group-hover:from-blue-700 group-hover:via-blue-800 group-hover:to-blue-900 transition-all duration-300">
                 RE-VIEW
               </h1>
               <span className="text-xs text-gray-500 font-medium tracking-wide">AI Solutions</span>
@@ -63,8 +62,8 @@ const Navbar = () => {
                   to={item.path}
                   className={`px-6 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${
                     location.pathname === item.path
-                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg transform scale-105'
-                      : 'text-gray-700 hover:text-white hover:bg-gradient-to-r hover:from-blue-400 hover:to-purple-500 hover:shadow-md hover:scale-105'
+                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg transform scale-105'
+                      : 'text-gray-700 hover:text-white hover:bg-gradient-to-r hover:from-blue-400 hover:to-blue-500 hover:shadow-md hover:scale-105'
                   }`}
                 >
                   {item.name}
@@ -73,13 +72,25 @@ const Navbar = () => {
             </div>
           </div>
 
-          <div className="md:hidden">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="inline-flex items-center justify-center p-3 rounded-full text-gray-600 hover:text-white hover:bg-gradient-to-r hover:from-blue-400 hover:to-purple-500 focus:outline-none transition-all duration-300 shadow-md hover:shadow-lg"
+          <div className="flex items-center space-x-4">
+            <a
+              href="https://reviewrv25.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden md:flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full font-semibold transition-all duration-300 hover:from-blue-600 hover:to-blue-700 hover:shadow-lg hover:scale-105 shadow-md"
             >
-              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
+              <span>Review Portal</span>
+              <ExternalLink className="h-4 w-4" />
+            </a>
+
+            <div className="md:hidden">
+              <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="inline-flex items-center justify-center p-3 rounded-full text-gray-600 hover:text-white hover:bg-gradient-to-r hover:from-blue-400 hover:to-blue-500 focus:outline-none transition-all duration-300 shadow-md hover:shadow-lg"
+              >
+                {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -94,13 +105,23 @@ const Navbar = () => {
                 onClick={() => setIsOpen(false)}
                 className={`block px-6 py-4 rounded-xl text-base font-semibold transition-all duration-300 ${
                   location.pathname === item.path
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg'
-                    : 'text-gray-700 hover:text-white hover:bg-gradient-to-r hover:from-blue-400 hover:to-purple-500 hover:shadow-md hover:scale-105'
+                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg'
+                    : 'text-gray-700 hover:text-white hover:bg-gradient-to-r hover:from-blue-400 hover:to-blue-500 hover:shadow-md hover:scale-105'
                 }`}
               >
                 {item.name}
               </Link>
             ))}
+            <a
+              href="https://reviewrv25.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center space-x-2 px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-semibold transition-all duration-300 hover:from-blue-600 hover:to-blue-700 hover:shadow-lg"
+              onClick={() => setIsOpen(false)}
+            >
+              <span>Review Portal</span>
+              <ExternalLink className="h-4 w-4" />
+            </a>
           </div>
         </div>
       )}
