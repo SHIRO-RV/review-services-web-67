@@ -1,27 +1,47 @@
-
 import React, { useState, useRef, useEffect } from "react";
-import { MessageSquare, SendHorizontal } from "lucide-react"; // Added SendHorizontal, kept MessageSquare in case it's needed elsewhere (though not in this version)
+import { SendHorizontal, Settings, MessageSquare } from "lucide-react"; // Added Settings
 import WhatsAppButton from "./WhatsAppButton";
-import { findAnswer } from "./revyChatBotUtils"; // Removed FAQS as it's not directly used here
+import { findAnswer, getPerplexityResponse } from "./revyChatBotUtils";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { motion, AnimatePresence } from "framer-motion"; // Added for animations
+import { Button } from "@/components/ui/button"; // Added Button
+import { Input } from "@/components/ui/input"; // Added Input
+import { toast } from "sonner"; // Added toast
+import { motion, AnimatePresence } from "framer-motion";
 
 const WHATSAPP_NUMBER = "918341105135";
-const REVY_LOGO_URL = "/lovable-uploads/e386a7d6-7e49-4326-9a62-5226b96d6577.png";
+const REVY_LOGO_URL = "/lovable-uploads/e386a7d6-7e49-4326-9a62-5226b96d6577.png"; // Using the uploaded image
+
+interface Message {
+  from: "user" | "bot";
+  text: string | React.ReactNode;
+  type?: "typing" | "error"; // Added type for special messages
+}
 
 const RevyChatBot = () => {
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<{ from: string; text: string | React.ReactNode; }[]>([
+  const [messages, setMessages] = useState<Message[]>([
     {
       from: "bot",
-      text: "Hi! I'm Revy 🤖. Ask me anything about our company, our services, or your web project!"
+      text: "Hi! I'm Revy 🤖. Ask me anything about our company, our services, or your web project! For advanced AI answers, please provide a Perplexity API key via the settings icon in the header."
     }
   ]);
   const [input, setInput] = useState("");
-  // const [lastUserQuestion, setLastUserQuestion] = useState(""); // This state wasn't used, removing it
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [showAskRevyTooltip, setShowAskRevyTooltip] = useState(false);
+
+  const [perplexityApiKey, setPerplexityApiKey] = useState<string | null>(null);
+  const [tempApiKey, setTempApiKey] = useState<string>("");
+  const [showApiKeyInput, setShowApiKeyInput] = useState(false);
+  const [isAiThinking, setIsAiThinking] = useState(false);
+
+  useEffect(() => {
+    const storedApiKey = localStorage.getItem("perplexityApiKey");
+    if (storedApiKey) {
+      setPerplexityApiKey(storedApiKey);
+      setTempApiKey(storedApiKey); // Pre-fill input if key exists
+    }
+  }, []);
 
   useEffect(() => {
     if (open && messagesEndRef.current) {
@@ -57,23 +77,63 @@ const RevyChatBot = () => {
     };
   }, [open]);
 
-  const handleSend = (e?: React.FormEvent) => {
+
+  const handleSaveApiKey = () => {
+    if (tempApiKey.trim()) {
+      localStorage.setItem("perplexityApiKey", tempApiKey.trim());
+      setPerplexityApiKey(tempApiKey.trim());
+      setShowApiKeyInput(false);
+      toast.success("Perplexity API Key saved!");
+      setMessages(prev => [...prev, {from: "bot", text: "API Key saved. I can now use advanced AI!"}]);
+    } else {
+      localStorage.removeItem("perplexityApiKey");
+      setPerplexityApiKey(null);
+      toast.info("Perplexity API Key removed.");
+       setMessages(prev => [...prev, {from: "bot", text: "API Key removed. My AI capabilities are now limited to FAQs."}]);
+    }
+  };
+  
+  const getConversationHistory = (): {role: string, content: string}[] => {
+    return messages
+      .filter(msg => typeof msg.text === 'string' && msg.type !== 'typing' && msg.type !== 'error') // Filter out non-string messages and special types
+      .map(msg => ({
+        role: msg.from === 'user' ? 'user' : 'assistant',
+        content: msg.text as string, // We've filtered to ensure text is string
+      }));
+  };
+
+
+  const handleSend = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    const trimmed = input.trim();
-    if (!trimmed) return;
+    const trimmedInput = input.trim();
+    if (!trimmedInput) return;
 
-    // setLastUserQuestion(trimmed); // This was for the unused state
-
-    setMessages(prev => [
-      ...prev,
-      { from: "user", text: trimmed }
-    ]);
+    setMessages(prev => [...prev, { from: "user", text: trimmedInput }]);
     setInput("");
+    setIsAiThinking(true);
+    setMessages(prev => [...prev, { from: "bot", text: "Revy is thinking...", type: "typing" }]);
 
-    setTimeout(() => {
-      const answer = findAnswer(trimmed);
-      if (answer) {
-        setMessages(prev => [...prev, { from: "bot", text: answer }]);
+    let botResponse: string | React.ReactNode | null = null;
+    const conversationHistory = getConversationHistory();
+
+    if (perplexityApiKey) {
+      botResponse = await getPerplexityResponse(trimmedInput, perplexityApiKey, conversationHistory.slice(0, -1)); // Exclude the current user message from history for this call as it's passed as 'question'
+    }
+    
+    // Remove "thinking" message
+    setMessages(prev => prev.filter(msg => msg.type !== "typing"));
+    setIsAiThinking(false);
+
+    if (botResponse && !botResponse.startsWith("Sorry, I encountered an issue") && !botResponse.startsWith("It seems there's an issue with your Perplexity API key")) {
+      setMessages(prev => [...prev, { from: "bot", text: botResponse }]);
+    } else {
+      if (botResponse && (botResponse.startsWith("Sorry, I encountered an issue") || botResponse.startsWith("It seems there's an issue with your Perplexity API key"))) {
+         setMessages(prev => [...prev, { from: "bot", text: botResponse, type: "error" }]);
+      }
+      // Fallback to FAQ
+      const faqAnswer = findAnswer(trimmedInput);
+      if (faqAnswer) {
+        setMessages(prev => [...prev, { from: "bot", text: faqAnswer }]);
       } else {
         setMessages(prev => [
           ...prev,
@@ -81,19 +141,21 @@ const RevyChatBot = () => {
             from: "bot",
             text: (
               <>
-                Sorry, I couldn't answer that.<br />
+                Sorry, I couldn't answer that based on my current knowledge or FAQs.
+                <br />
                 <span>
                   <WhatsAppButton
-                    message={trimmed} // Passing the original user question
+                    message={trimmedInput}
                     number={WHATSAPP_NUMBER}
                   />
                 </span>
               </>
-            )
+            ),
+            type: "error",
           }
         ]);
       }
-    }, 500);
+    }
   };
 
   return (
@@ -105,7 +167,6 @@ const RevyChatBot = () => {
         aria-label={open ? "Close chat with Revy" : "Open chat with Revy"}
         style={{ boxShadow: "0 4px 24px rgba(110, 93, 185, 0.2)" }}
       >
-        {/* <MessageSquare size={36} /> */}
         <img src={REVY_LOGO_URL} alt="Revy Chat Icon" className="w-10 h-10 rounded-full object-cover" />
       </button>
 
@@ -124,6 +185,7 @@ const RevyChatBot = () => {
         )}
       </AnimatePresence>
 
+
       {/* Chat Window */}
       {open && (
         <div className="fixed z-50 bottom-24 right-6 w-80 max-w-[92vw] bg-white border border-blue-200 rounded-xl shadow-2xl flex flex-col animate-fade-in-up">
@@ -135,14 +197,46 @@ const RevyChatBot = () => {
               </Avatar>
               Revy
             </span>
-            <button
-              onClick={() => setOpen(false)}
-              className="text-white text-xl px-2 focus:outline-none hover:text-gray-200 transition-colors"
-              aria-label="Close chat"
-            >
-              ×
-            </button>
+            <div className="flex items-center gap-2">
+                <button
+                    onClick={() => setShowApiKeyInput(prev => !prev)}
+                    className="text-white hover:text-gray-200 transition-colors"
+                    aria-label="API Key Settings"
+                >
+                    <Settings size={20} />
+                </button>
+                <button
+                onClick={() => setOpen(false)}
+                className="text-white text-xl px-1 focus:outline-none hover:text-gray-200 transition-colors"
+                aria-label="Close chat"
+                >
+                ×
+                </button>
+            </div>
           </div>
+
+          {showApiKeyInput && (
+            <div className="p-3 border-b border-blue-100 bg-gray-50">
+              <label htmlFor="perplexityApiKey" className="block text-sm font-medium text-gray-700 mb-1">
+                Perplexity API Key
+              </label>
+              <div className="flex gap-2">
+                <Input
+                  type="password" // Use password type to obscure key
+                  id="perplexityApiKey"
+                  placeholder="Enter your API key"
+                  value={tempApiKey}
+                  onChange={e => setTempApiKey(e.target.value)}
+                  className="flex-1"
+                />
+                <Button onClick={handleSaveApiKey} size="sm">Save</Button>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Get your key from Perplexity Labs. Stored in local browser storage.
+              </p>
+            </div>
+          )}
+
           <div className="flex-1 px-4 py-3 overflow-y-auto max-h-96" style={{ minHeight: 200 }}>
             {messages.map((msg, idx) => (
               <div
@@ -158,10 +252,10 @@ const RevyChatBot = () => {
                 <div
                   className={`rounded-xl px-4 py-2 shadow-sm
                     ${msg.from === "bot"
-                    ? "bg-blue-50 text-gray-800"
+                    ? (msg.type === "error" ? "bg-red-100 text-red-700" : "bg-blue-50 text-gray-800")
                     : "bg-purple-600 text-white"}
                   `}
-                  style={{ maxWidth: msg.from === 'bot' ? 'calc(100% - 2.75rem)' : '85%'}} // 2rem avatar + 0.5rem gap + 0.25rem buffer
+                  style={{ maxWidth: msg.from === 'bot' ? 'calc(100% - 2.75rem)' : '85%'}}
                 >
                   {msg.text}
                 </div>
@@ -183,11 +277,12 @@ const RevyChatBot = () => {
               onChange={e => setInput(e.target.value)}
               maxLength={300}
               autoFocus
+              disabled={isAiThinking} // Disable input while AI is thinking
             />
             <button
               type="submit"
               className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3 rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none transition-all flex items-center justify-center aspect-square"
-              disabled={!input.trim()}
+              disabled={!input.trim() || isAiThinking} // Disable button while AI is thinking
               aria-label="Send message"
             >
               <SendHorizontal size={20} />

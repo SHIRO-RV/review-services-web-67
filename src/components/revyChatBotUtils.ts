@@ -1,4 +1,3 @@
-
 /**
  * Utility functions and constants for RevyChatBot.
  */
@@ -92,4 +91,55 @@ export function findAnswer(question: string): string | null {
     return "You can view our recent work in the Portfolio section on the website!";
   }
   return null;
+}
+
+export async function getPerplexityResponse(question: string, apiKey: string, conversationHistory: {role: string, content: string}[]): Promise<string> {
+  try {
+    const messagesForApi = [
+      {
+        role: 'system',
+        content: "You are Revy, a helpful AI assistant for ReView AI, a web solutions agency. Be friendly, concise, and helpful. If you don't know an answer, say so politely. Do not make up information about ReView AI's specific projects or internal details unless it's in the FAQS or general knowledge you are programmed with."
+      },
+      ...conversationHistory, // Add previous messages
+      {
+        role: 'user',
+        content: question
+      }
+    ];
+
+    // Keep only the last N messages to avoid exceeding token limits (e.g., last 10 messages including system prompt)
+    const maxHistoryLength = 10;
+    if (messagesForApi.length > maxHistoryLength) {
+        messagesForApi.splice(1, messagesForApi.length - maxHistoryLength); // remove older messages, keep system prompt
+    }
+
+
+    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'llama-3.1-sonar-small-128k-online', // Using a capable online model
+        messages: messagesForApi,
+        temperature: 0.7, // Adjust for creativity vs. factuality
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Perplexity API Error:", errorData);
+      throw new Error(`Perplexity API Error: ${response.status} ${errorData.error?.message || response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.choices[0].message.content;
+  } catch (error) {
+    console.error("Failed to get response from Perplexity AI:", error);
+    if (error instanceof Error && error.message.includes("401")) {
+        return "It seems there's an issue with your Perplexity API key. Please check it and try again.";
+    }
+    return "Sorry, I encountered an issue trying to connect to the AI. Please try again later.";
+  }
 }
