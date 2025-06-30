@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import { SendHorizontal, Settings, MessageSquare, Sparkles } from "lucide-react";
 import WhatsAppButton from "./WhatsAppButton";
@@ -103,51 +104,38 @@ const RevyChatBot = () => {
       }));
   };
 
-  const isUnsupportedQuery = (question: string): boolean => {
-    const normalized = question.toLowerCase();
-    
-    // Complex technical questions that need human expertise
-    const complexPatterns = [
-      "how to code",
-      "write code for",
-      "programming help",
-      "debug my code",
-      "sql query",
-      "database design",
-      "algorithm",
-      "technical documentation",
-      "system architecture",
-      "api integration",
-      "complex calculation",
-      "mathematical formula"
-    ];
-    
-    // Very specific business requests
-    const specificBusinessPatterns = [
-      "exact pricing",
-      "detailed proposal",
-      "contract terms",
-      "legal advice",
-      "specific timeline for my project",
-      "custom quote",
-      "project estimation"
-    ];
-    
-    return complexPatterns.some(pattern => normalized.includes(pattern)) ||
-           specificBusinessPatterns.some(pattern => normalized.includes(pattern));
-  };
-
-  const getFallbackMessageWithWhatsApp = (userMessage: string) => (
-    <div className="flex flex-col gap-2">
-      <div>
-        I'm not able to provide a good answer for that right now. Our team can help you better with detailed questions!
+  const getUnableToUnderstandMessage = (userMessage: string) => (
+    <div className="flex flex-col gap-3">
+      <div className="text-gray-700">
+        I am unable to understand your query. Please contact our team for better assistance.
       </div>
       <WhatsAppButton
-        message={`Hi! I need help with: ${userMessage}`}
+        message={`Hi! I have a question: ${userMessage}`}
         number={WHATSAPP_NUMBER}
       />
     </div>
   );
+
+  const isValidResponse = (response: string | null): boolean => {
+    if (!response || typeof response !== 'string') return false;
+    
+    // Check if response is too short or generic
+    if (response.length < 10) return false;
+    
+    // Check for error indicators
+    const errorIndicators = [
+      "having trouble",
+      "can't understand",
+      "not sure",
+      "don't know",
+      "error",
+      "unable to",
+      "something went wrong"
+    ];
+    
+    const lowerResponse = response.toLowerCase();
+    return !errorIndicators.some(indicator => lowerResponse.includes(indicator));
+  };
 
   const handleSend = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -159,58 +147,56 @@ const RevyChatBot = () => {
     setIsAiThinking(true);
     setMessages(prev => [...prev, { 
       from: "bot", 
-      text: aiMode === 'simple' ? "🤔 Let me think about that..." : "🤖 Revy is thinking...", 
+      text: "🤔 Let me think about that...", 
       type: "typing" 
     }]);
 
-    let botResponse: string | null = null;
-    const conversationHistory = getConversationHistory();
+    try {
+      let botResponse: string | null = null;
+      const conversationHistory = getConversationHistory();
 
-    // Check unsupported/complex query first
-    if (isUnsupportedQuery(trimmedInput)) {
+      // First try to find a direct FAQ answer
+      botResponse = findAnswer(trimmedInput);
+      
+      // If no FAQ match, try AI response
+      if (!botResponse) {
+        if (aiMode === 'perplexity' && perplexityApiKey) {
+          botResponse = await getPerplexityResponse(trimmedInput, perplexityApiKey, conversationHistory.slice(0, -1));
+        } else {
+          botResponse = await getHuggingFaceResponse(trimmedInput, conversationHistory.slice(0, -1));
+        }
+      }
+
+      // Remove typing indicator
       setMessages(prev => prev.filter(msg => msg.type !== "typing"));
       setIsAiThinking(false);
-      setMessages(prev => [
-        ...prev,
-        {
-          from: "bot",
-          text: getFallbackMessageWithWhatsApp(trimmedInput),
-          type: "fallback",
-        }
-      ]);
-      return;
-    }
 
-    // Try AI response
-    if (aiMode === 'perplexity' && perplexityApiKey) {
-      botResponse = await getPerplexityResponse(trimmedInput, perplexityApiKey, conversationHistory.slice(0, -1)); 
-    } else {
-      botResponse = await getHuggingFaceResponse(trimmedInput, conversationHistory.slice(0, -1));
-    }
-    
-    setMessages(prev => prev.filter(msg => msg.type !== "typing"));
-    setIsAiThinking(false);
-
-    // Check if AI response indicates an error/unsure/short/unhelpful answer
-    if (
-      typeof botResponse === 'string' && 
-      (
-        botResponse.includes("having trouble") ||
-        botResponse.includes("connect you with our team") ||
-        botResponse.includes("API key") ||
-        botResponse.length < 20 // fallback for very short/unsure answers
-      )
-    ) {
-      setMessages(prev => [
-        ...prev,
-        {
+      // Check if we got a valid response
+      if (isValidResponse(botResponse)) {
+        setMessages(prev => [...prev, { 
+          from: "bot", 
+          text: botResponse, 
+          type: "ai-powered" 
+        }]);
+      } else {
+        // Show fallback message with WhatsApp button
+        setMessages(prev => [...prev, {
           from: "bot",
-          text: getFallbackMessageWithWhatsApp(trimmedInput),
+          text: getUnableToUnderstandMessage(trimmedInput),
           type: "fallback",
-        }
-      ]);
-    } else {
-      setMessages(prev => [...prev, { from: "bot", text: botResponse, type: "ai-powered" }]);
+        }]);
+      }
+    } catch (error) {
+      console.error("Chat error:", error);
+      setMessages(prev => prev.filter(msg => msg.type !== "typing"));
+      setIsAiThinking(false);
+      
+      // Show fallback message on any error
+      setMessages(prev => [...prev, {
+        from: "bot",
+        text: getUnableToUnderstandMessage(trimmedInput),
+        type: "fallback",
+      }]);
     }
   };
 

@@ -15,6 +15,7 @@ export const FAQS = [
       "who is review ai",
       "what are your main services",
       "company info",
+      "about review ai"
     ],
     a: "ReView AI is a web solutions agency creating custom software, apps, AI-powered tools, UI/UX design, and consulting to help your business grow!",
   },
@@ -26,6 +27,7 @@ export const FAQS = [
       "email",
       "phone number",
       "how do i reach you",
+      "contact info"
     ],
     a: "You can contact us via email at reviewrv25@gmail.com or WhatsApp/call at +91 8341105135. For a quick response, use our Contact form!",
   },
@@ -35,6 +37,7 @@ export const FAQS = [
       "can you make an ecommerce website",
       "do you build online stores",
       "ecommerce solutions",
+      "online store development"
     ],
     a: "Yes! We build robust and beautiful eCommerce websites with custom features, shopping carts, and payment gateways.",
   },
@@ -44,6 +47,7 @@ export const FAQS = [
       "website redesign",
       "refresh my website",
       "can you improve my existing website",
+      "modernize my website"
     ],
     a: "Absolutely! We modernize and redesign websites to boost results and provide a fresh digital experience.",
   },
@@ -53,6 +57,8 @@ export const FAQS = [
       "website timeline",
       "how fast is your delivery",
       "how long does a project take",
+      "project duration",
+      "development time"
     ],
     a: "Typical project timelines range from 2 to 6 weeks, depending on complexity. We'll always work closely to meet your deadlines.",
   },
@@ -63,6 +69,7 @@ export const FAQS = [
       "do you provide maintenance",
       "support after launch",
       "do you offer hosting support",
+      "ongoing support"
     ],
     a: "Yes, we provide ongoing support, updates, maintenance, and can help with hosting for your project after launch.",
   },
@@ -72,25 +79,44 @@ export const FAQS = [
       "app development",
       "can you build an app",
       "do you do mobile development",
+      "mobile app creation"
     ],
     a: "We offer mobile app development for both Android and iOS, along with cross-platform web apps tailored for your business.",
+  },
+  {
+    q: [
+      "pricing",
+      "cost",
+      "how much",
+      "price",
+      "budget",
+      "quote"
+    ],
+    a: "We offer customized quotes based on your project needs. Get in touch for a free consultation and detailed pricing!",
+  },
+  {
+    q: [
+      "portfolio",
+      "examples",
+      "previous work",
+      "case studies",
+      "your work"
+    ],
+    a: "You can view our recent work and case studies in the Portfolio section on our website. We've helped businesses across various industries achieve their digital goals!",
   }
 ];
 
 export function findAnswer(question: string): string | null {
   const normalized = question.toLowerCase().replace(/[^a-z0-9 ]/g, "");
+  
   for (const item of FAQS) {
     for (const q of item.q) {
-      if (normalized.includes(q)) return item.a;
+      if (normalized.includes(q)) {
+        return item.a;
+      }
     }
   }
-  // Try keyword match (very basic)
-  if (normalized.includes("price") || normalized.includes("cost")) {
-    return "We offer customized quotes based on your project needs. Get in touch for a free consultation!";
-  }
-  if (normalized.includes("portfolio") || normalized.includes("examples")) {
-    return "You can view our recent work in the Portfolio section on the website!";
-  }
+  
   return null;
 }
 
@@ -114,7 +140,7 @@ export function getSimpleAIResponse(question: string): string {
   }
   
   // Technology questions
-  if (normalized.includes("technology") || normalized.includes("tech stack")) {
+  if (normalized.includes("technology") || normalized.includes("tech stack") || normalized.includes("technologies")) {
     return "We work with modern technologies including React, Node.js, Python, mobile development frameworks, and AI/ML tools to build cutting-edge solutions.";
   }
   
@@ -123,35 +149,54 @@ export function getSimpleAIResponse(question: string): string {
     return "ReView AI combines technical expertise with creative design to deliver custom solutions that drive business growth. We focus on quality, innovation, and client satisfaction.";
   }
   
-  return "I'm here to help with questions about ReView AI's services! For complex queries or detailed discussions, feel free to reach out to our team directly.";
+  // Process questions
+  if (normalized.includes("process") || normalized.includes("how do you work")) {
+    return "Our process involves understanding your needs, planning the solution, developing with regular updates, testing thoroughly, and providing ongoing support.";
+  }
+  
+  return null; // Return null if no pattern matches
 }
 
 export async function getHuggingFaceResponse(question: string, conversationHistory: {role: string, content: string}[]): Promise<string> {
   try {
-    console.log('Attempting to use simple AI response...');
+    console.log('Attempting to find answer for:', question);
     
     // First try FAQ
     const faqAnswer = findAnswer(question);
     if (faqAnswer) {
+      console.log('Found FAQ answer');
       return faqAnswer;
     }
     
     // Then try simple pattern matching
     const simpleResponse = getSimpleAIResponse(question);
-    return simpleResponse;
+    if (simpleResponse) {
+      console.log('Found simple AI response');
+      return simpleResponse;
+    }
+    
+    // If no patterns match, return null to trigger fallback
+    console.log('No matching patterns found');
+    return null;
     
   } catch (error) {
     console.error("AI processing error:", error);
-    return "I'm having trouble understanding that question right now. Let me connect you with our team for better assistance!";
+    return null;
   }
 }
 
 export async function getPerplexityResponse(question: string, apiKey: string, conversationHistory: {role: string, content: string}[]): Promise<string> {
   try {
+    // First check FAQ for immediate answers
+    const faqAnswer = findAnswer(question);
+    if (faqAnswer) {
+      return faqAnswer;
+    }
+
     const messagesForApi = [
       {
         role: 'system',
-        content: "You are Revy, a helpful AI assistant for ReView AI, a web solutions agency. Be friendly, concise, and helpful. If you don't know an answer, say so politely. Do not make up information about ReView AI's specific projects or internal details unless it's in the FAQS or general knowledge you are programmed with."
+        content: "You are Revy, a helpful AI assistant for ReView AI, a web solutions agency. Be friendly, concise, and helpful. Focus on providing accurate information about web development, mobile apps, AI solutions, and digital services. If you don't know something specific about ReView AI, be honest about it. Keep responses under 100 words when possible."
       },
       ...conversationHistory,
       {
@@ -160,7 +205,7 @@ export async function getPerplexityResponse(question: string, apiKey: string, co
       }
     ];
 
-    const maxHistoryLength = 10;
+    const maxHistoryLength = 8;
     if (messagesForApi.length > maxHistoryLength) {
         messagesForApi.splice(1, messagesForApi.length - maxHistoryLength);
     }
@@ -174,23 +219,28 @@ export async function getPerplexityResponse(question: string, apiKey: string, co
       body: JSON.stringify({
         model: 'llama-3.1-sonar-small-128k-online',
         messages: messagesForApi,
-        temperature: 0.7,
+        temperature: 0.3,
+        max_tokens: 200,
       }),
     });
 
     if (!response.ok) {
       const errorData = await response.json();
       console.error("Perplexity API Error:", errorData);
-      throw new Error(`Perplexity API Error: ${response.status} ${errorData.error?.message || response.statusText}`);
+      return null;
     }
 
     const data = await response.json();
-    return data.choices[0].message.content;
+    const aiResponse = data.choices[0].message.content;
+    
+    // Validate the response quality
+    if (aiResponse && aiResponse.length > 20 && !aiResponse.toLowerCase().includes("i don't know")) {
+      return aiResponse;
+    }
+    
+    return null;
   } catch (error) {
     console.error("Failed to get response from Perplexity AI:", error);
-    if (error instanceof Error && error.message.includes("401")) {
-        return "It seems there's an issue with your Perplexity API key. Please check it and try again.";
-    }
-    return "I'm having trouble connecting to the AI right now. Let me help you get in touch with our team directly!";
+    return null;
   }
 }
