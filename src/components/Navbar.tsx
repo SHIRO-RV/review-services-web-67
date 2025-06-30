@@ -50,7 +50,7 @@ const Navbar = () => {
               <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 bg-clip-text text-transparent group-hover:from-blue-700 group-hover:via-blue-800 group-hover:to-blue-900 transition-all duration-300">
                 RE-VIEW
               </h1>
-              <span className="text-xs text-gray-500 font-medium tracking-wide">AI Solutions</span>
+              <span className="text-xs text-gray-500 font-medium tracking-wide">AI Tech & Solutions</span>
             </div>
           </Link>
           
